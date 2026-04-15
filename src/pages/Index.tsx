@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import Header from "@/components/Header";
 import BenchMap from "@/components/BenchMap";
 import ProgressTracker from "@/components/ProgressTracker";
-import BenchDetail from "@/components/BenchDetail";
+import BenchSidePanel from "@/components/BenchSidePanel";
 import { type BigBench } from "@/data/benches";
 
 const Index = () => {
@@ -40,20 +40,20 @@ const Index = () => {
         </div>
 
         {/* Mobile progress - bottom sheet style */}
-        <div className="absolute bottom-4 left-4 right-4 z-[1000] sm:hidden">
-          <ProgressTracker visitedIds={visitedIds} />
-        </div>
+        {!selectedBench && (
+          <div className="absolute bottom-4 left-4 right-4 z-[1000] sm:hidden">
+            <ProgressTracker visitedIds={visitedIds} />
+          </div>
+        )}
       </main>
 
-      {/* Bench detail modal */}
-      {selectedBench && (
-        <BenchDetail
-          bench={selectedBench}
-          visited={visitedIds.includes(selectedBench.id)}
-          onClose={() => setSelectedBench(null)}
-          onToggleVisited={() => toggleVisited(selectedBench.id)}
-        />
-      )}
+      {/* Bench side panel */}
+      <BenchSidePanel
+        bench={selectedBench}
+        visited={selectedBench ? visitedIds.includes(selectedBench.id) : false}
+        onClose={() => setSelectedBench(null)}
+        onToggleVisited={() => selectedBench && toggleVisited(selectedBench.id)}
+      />
     </div>
   );
 };
