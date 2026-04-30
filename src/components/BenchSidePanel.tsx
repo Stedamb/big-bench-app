@@ -111,7 +111,7 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
               onClick={() => navigate(`/bench/${bench.id}`)}
             >
               <ExternalLink className="w-4 h-4" />
-              View Full Details →
+              Vedi tutti i dettagli →
             </Button>
             <Button
               className="w-full gap-2 h-11"
@@ -119,7 +119,7 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
               onClick={onToggleVisited}
             >
               <Check className="w-4 h-4" />
-              {visited ? "✓ Panchina visitata!" : "Set Visited Status"}
+              {visited ? "✓ Panchina visitata!" : "Segna come visitata"}
             </Button>
           </div>
         </div>

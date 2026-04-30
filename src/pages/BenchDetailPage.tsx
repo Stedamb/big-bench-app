@@ -272,7 +272,7 @@ const BenchDetailPage = () => {
             <Button
               className="w-full gap-2 h-11"
               variant={visited ? "secondary" : "default"}
-              onClick={toggleVisited}
+              onClick={() => toggleVisited(bench.id)}
             >
               <Check className="w-4 h-4" />
               {visited ? "✓ Panchina visitata" : "Segna come visitata"}
