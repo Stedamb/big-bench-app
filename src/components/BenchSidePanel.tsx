@@ -1,4 +1,5 @@
 import { X, MapPin, Mountain, Calendar, Palette, Camera, Check, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { benchColorMap, type BigBench } from "@/data/benches";
 import { Button } from "@/components/ui/button";
 
@@ -10,6 +11,7 @@ interface BenchSidePanelProps {
 }
 
 const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSidePanelProps) => {
+  const navigate = useNavigate();
   if (!bench) return null;
   const color = benchColorMap[bench.color] || "#C4572A";
 
@@ -106,12 +108,7 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
             <Button
               className="w-full gap-2 h-11 font-medium"
               variant="default"
-              onClick={() => {
-                window.open(
-                  `https://www.google.com/maps?q=${bench.lat},${bench.lng}`,
-                  "_blank"
-                );
-              }}
+              onClick={() => navigate(`/bench/${bench.id}`)}
             >
               <ExternalLink className="w-4 h-4" />
               View Full Details →
