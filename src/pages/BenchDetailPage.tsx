@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import L from "leaflet";
@@ -17,6 +17,7 @@ import {
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { benchColorMap, bigBenches } from "@/data/benches";
+import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 
 interface Review {
   id: string;
@@ -75,10 +76,7 @@ const BenchDetailPage = () => {
     [id]
   );
 
-  const [visitedIds, setVisitedIds] = useState<number[]>(() => {
-    const saved = localStorage.getItem("bigbench-visited");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { visitedIds, toggleVisited } = useVisitedBenches();
 
   if (!bench) {
     return (
@@ -99,14 +97,6 @@ const BenchDetailPage = () => {
 
   const visited = visitedIds.includes(bench.id);
   const color = benchColorMap[bench.color] || "#C4572A";
-
-  const toggleVisited = () => {
-    const next = visited
-      ? visitedIds.filter((v) => v !== bench.id)
-      : [...visitedIds, bench.id];
-    setVisitedIds(next);
-    localStorage.setItem("bigbench-visited", JSON.stringify(next));
-  };
 
   const markerIcon = L.divIcon({
     className: "bench-detail-marker",
@@ -282,7 +272,7 @@ const BenchDetailPage = () => {
             <Button
               className="w-full gap-2 h-11"
               variant={visited ? "secondary" : "default"}
-              onClick={toggleVisited}
+              onClick={() => toggleVisited(bench.id)}
             >
               <Check className="w-4 h-4" />
               {visited ? "✓ Panchina visitata" : "Segna come visitata"}

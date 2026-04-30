@@ -1,24 +1,14 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import Header from "@/components/Header";
 import BenchMap from "@/components/BenchMap";
 import ProgressTracker from "@/components/ProgressTracker";
 import BenchSidePanel from "@/components/BenchSidePanel";
 import { type BigBench } from "@/data/benches";
+import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 
 const Index = () => {
-  const [visitedIds, setVisitedIds] = useState<number[]>(() => {
-    const saved = localStorage.getItem("bigbench-visited");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const { visitedIds, toggleVisited } = useVisitedBenches();
   const [selectedBench, setSelectedBench] = useState<BigBench | null>(null);
-
-  const toggleVisited = useCallback((id: number) => {
-    setVisitedIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id];
-      localStorage.setItem("bigbench-visited", JSON.stringify(next));
-      return next;
-    });
-  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">

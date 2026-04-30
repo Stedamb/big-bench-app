@@ -1,9 +1,9 @@
-import { useState, useCallback } from "react";
 import Header from "@/components/Header";
 import { bigBenches, benchColorMap } from "@/data/benches";
 import { Check, Lock, ArrowLeft } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 
 const quotes = [
   {
@@ -25,18 +25,7 @@ const getExplorerGrade = (percentage: number) => {
 };
 
 const ProgressPage = () => {
-  const [visitedIds, setVisitedIds] = useState<number[]>(() => {
-    const saved = localStorage.getItem("bigbench-visited");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const toggleVisited = useCallback((id: number) => {
-    setVisitedIds((prev) => {
-      const next = prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id];
-      localStorage.setItem("bigbench-visited", JSON.stringify(next));
-      return next;
-    });
-  }, []);
+  const { visitedIds, toggleVisited } = useVisitedBenches();
 
   const total = bigBenches.length;
   const visited = visitedIds.length;
