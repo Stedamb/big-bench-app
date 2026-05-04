@@ -49,7 +49,7 @@ function FitBounds({ benches }: { benches: Bench[] }) {
 interface BenchMapProps {
   visitedIds: number[];
   onToggleVisited: (id: number) => void;
-  onSelectBench: (bench: any) => void;
+  onSelectBench: (bench: Bench) => void;
 }
 
 const BenchMap = ({ visitedIds, onToggleVisited, onSelectBench }: BenchMapProps) => {
