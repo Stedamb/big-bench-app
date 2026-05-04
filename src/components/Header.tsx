@@ -59,6 +59,14 @@ const Header = () => {
             </span>
           </Link>
           <Link
+            to="/community"
+            className={`text-sm font-medium transition-colors hover:text-primary ${
+              location.pathname === "/community" ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            Comunità
+          </Link>
+          <Link
             to="/progress"
             className={`text-sm font-medium transition-colors hover:text-primary ${
               location.pathname === "/progress" ? "text-primary" : "text-muted-foreground"

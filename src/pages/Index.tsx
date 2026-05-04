@@ -3,12 +3,12 @@ import Header from "@/components/Header";
 import BenchMap from "@/components/BenchMap";
 import ProgressTracker from "@/components/ProgressTracker";
 import BenchSidePanel from "@/components/BenchSidePanel";
-import { type BigBench } from "@/data/benches";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
+import type { Bench } from "@/hooks/useBenches";
 
 const Index = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
-  const [selectedBench, setSelectedBench] = useState<BigBench | null>(null);
+  const [selectedBench, setSelectedBench] = useState<Bench | null>(null);
 
   return (
     <div className="min-h-screen flex flex-col">

@@ -1,10 +1,10 @@
 import { X, MapPin, Mountain, Calendar, Palette, Camera, Check, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { benchColorMap, type BigBench } from "@/data/benches";
 import { Button } from "@/components/ui/button";
+import type { Bench } from "@/hooks/useBenches";
 
 interface BenchSidePanelProps {
-  bench: BigBench | null;
+  bench: Bench | null;
   visited: boolean;
   onClose: () => void;
   onToggleVisited: () => void;
@@ -13,7 +13,9 @@ interface BenchSidePanelProps {
 const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSidePanelProps) => {
   const navigate = useNavigate();
   if (!bench) return null;
-  const color = benchColorMap[bench.color] || "#C4572A";
+  
+  const primaryColor = bench.colors?.[0] || "#C4572A";
+  const secondaryColor = bench.colors?.[1] || primaryColor;
 
   return (
     <>
@@ -29,7 +31,7 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
         sm:inset-y-0 sm:right-0 sm:left-auto sm:top-0 sm:bottom-0 sm:h-full sm:w-[420px] sm:rounded-none
       `}>
         {/* Color header bar */}
-        <div className="h-1.5 sm:h-full sm:w-1.5 sm:absolute sm:left-0 sm:top-0" style={{ backgroundColor: color }} />
+        <div className="h-1.5 sm:h-full sm:w-1.5 sm:absolute sm:left-0 sm:top-0" style={{ background: `linear-gradient(to bottom, ${primaryColor}, ${secondaryColor})` }} />
 
         {/* Mobile drag handle */}
         <div className="sm:hidden flex justify-center py-2">
@@ -58,12 +60,15 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
 
           {/* Location badge */}
           <div className="flex items-center gap-2 mb-4">
-            <span
-              className="text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-sm text-primary-foreground"
-              style={{ backgroundColor: color }}
-            >
-              {bench.color}
-            </span>
+            <div className="flex -space-x-1">
+              {bench.colors?.map((c, i) => (
+                <div
+                  key={i}
+                  className="w-4 h-4 rounded-full border border-white"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
             <span className="text-xs text-muted-foreground">
               {bench.lat.toFixed(4)}°N, {bench.lng.toFixed(4)}°E
             </span>
@@ -81,25 +86,27 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
 
           {/* Description with drop cap */}
           <p className="font-editorial text-sm leading-relaxed drop-cap mb-5">
-            {bench.description}
+            {bench.description || "Questa panchina gigante invita i visitatori a fermarsi, sedersi e tornare bambini di fronte alla meraviglia del paesaggio circostante."}
           </p>
 
           {/* Stats row */}
           <div className="grid grid-cols-2 gap-4 py-4 border-y border-border mb-5">
             <div>
-              <p className="text-2xl font-display font-bold">{bench.altitude}<span className="text-sm font-normal text-muted-foreground">m</span></p>
+              <p className="text-2xl font-display font-bold">{bench.altitude_m || "?"}<span className="text-sm font-normal text-muted-foreground">m</span></p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Altitudine</p>
             </div>
             <div>
-              <p className="text-2xl font-display font-bold">{bench.installed}</p>
+              <p className="text-2xl font-display font-bold">
+                {bench.installed_on ? new Date(bench.installed_on).getFullYear() : "?"}
+              </p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Anno Vivo</p>
             </div>
           </div>
 
           {/* Installed info */}
           <p className="text-xs text-muted-foreground font-editorial leading-relaxed mb-6">
-            Installata in {bench.installed} da Chris Bangle, questa panchina è parte del progetto Big Bench
-            Community Project. Posizionata nei pressi di {bench.location}, offre una vista panoramica
+            {bench.installed_on ? `Installata il ${new Date(bench.installed_on).toLocaleDateString("it-IT", { year: 'numeric', month: 'long', day: 'numeric' })}` : "Parte del progetto Big Bench Community Project"}.
+            {bench.artist ? ` Creata dall'artista ${bench.artist}, questa` : " Questa"} panchina è situata nei pressi di {bench.location}, offrendo una vista panoramica
             sulle bellezze del {bench.region}.
           </p>
 

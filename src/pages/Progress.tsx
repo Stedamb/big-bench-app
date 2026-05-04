@@ -1,9 +1,9 @@
 import Header from "@/components/Header";
-import { bigBenches, benchColorMap } from "@/data/benches";
-import { Check, Lock, ArrowLeft } from "lucide-react";
+import { Check, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
+import { useBenches } from "@/hooks/useBenches";
 
 const quotes = [
   {
@@ -26,31 +26,43 @@ const getExplorerGrade = (percentage: number) => {
 
 const ProgressPage = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
+  const { data: benches = [], isLoading } = useBenches();
 
-  const total = bigBenches.length;
-  const visited = visitedIds.length;
-  const percentage = Math.round((visited / total) * 100);
+  const total = benches.length;
+  const visitedCount = visitedIds.length;
+  const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
 
   const regionsVisited = new Set(
-    bigBenches.filter(b => visitedIds.includes(b.id)).map(b => b.region)
+    benches.filter(b => visitedIds.includes(b.id)).map(b => b.region)
   ).size;
-  const totalRegions = new Set(bigBenches.map(b => b.region)).size;
+  const totalRegions = new Set(benches.map(b => b.region)).size;
 
   // Total altitude of visited benches
-  const totalAltitude = bigBenches
+  const totalAltitude = benches
     .filter(b => visitedIds.includes(b.id))
-    .reduce((sum, b) => sum + b.altitude, 0);
+    .reduce((sum, b) => sum + (b.altitude_m || 0), 0);
 
   // Recent visits (last 3 visited)
-  const recentVisits = bigBenches.filter(b => visitedIds.includes(b.id)).slice(-3);
+  const recentVisits = benches.filter(b => visitedIds.includes(b.id)).slice(-3);
 
   // Featured bench (random unvisited or first)
-  const unvisited = bigBenches.filter(b => !visitedIds.includes(b.id));
-  const featured = unvisited.length > 0 ? unvisited[0] : bigBenches[0];
-  const featuredColor = benchColorMap[featured.color] || "#C4572A";
+  const unvisited = benches.filter(b => !visitedIds.includes(b.id));
+  const featured = unvisited.length > 0 ? unvisited[0] : benches[0];
+  const featuredColor = featured?.colors?.[0] || "#C4572A";
 
   const currentDate = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  const quote = quotes[visited % quotes.length];
+  const quote = quotes[visitedCount % quotes.length];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-background">
+        <Header />
+        <main className="flex-1 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -96,11 +108,11 @@ const ProgressPage = () => {
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Altitude Traversed</p>
                       <p className="text-3xl font-display font-bold leading-none mt-1">
-                        {totalAltitude.toLocaleString()} <span className="text-base font-normal text-muted-foreground">km</span>
+                        {(totalAltitude / 1000).toFixed(1)} <span className="text-base font-normal text-muted-foreground">km</span>
                       </p>
                     </div>
                     <div className="flex gap-0.5">
-                      {[...Array(Math.min(visited, 8))].map((_, i) => (
+                      {[...Array(Math.min(visitedCount, 8))].map((_, i) => (
                         <div key={i} className="w-2 h-6 bg-primary rounded-sm" style={{ height: `${12 + i * 3}px` }} />
                       ))}
                     </div>
@@ -112,45 +124,47 @@ const ProgressPage = () => {
                     <div>
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Benches Discovered</p>
                       <p className="text-3xl font-display font-bold leading-none mt-1">
-                        {visited} <span className="text-base font-normal text-muted-foreground">sites</span>
+                        {visitedCount} <span className="text-base font-normal text-muted-foreground">sites</span>
                       </p>
                     </div>
-                    <p className="text-xs text-muted-foreground">+{Math.min(visited, 3)} this month</p>
+                    <p className="text-xs text-muted-foreground">+{Math.min(visitedCount, 3)} this month</p>
                   </div>
                 </div>
               </div>
 
               {/* Featured bench card */}
-              <div className="relative rounded-lg overflow-hidden border border-border shadow-[var(--shadow-card)]">
-                <div className="absolute top-3 left-3 z-10">
-                  <span className="text-[9px] uppercase tracking-[0.2em] bg-card/90 px-2 py-1 rounded-sm font-medium">
-                    Safe for Work
-                  </span>
-                </div>
-                <div className="bg-muted aspect-[4/3] flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <div
-                      className="w-16 h-16 rounded-sm mx-auto mb-3 flex items-center justify-center text-xl font-bold"
-                      style={{ backgroundColor: featuredColor, color: featured.color === "Bianca" ? "#1a1a1a" : "#fff" }}
-                    >
-                      #{featured.number}
+              {featured && (
+                <div className="relative rounded-lg overflow-hidden border border-border shadow-[var(--shadow-card)]">
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="text-[9px] uppercase tracking-[0.2em] bg-card/90 px-2 py-1 rounded-sm font-medium">
+                      Safe for Work
+                    </span>
+                  </div>
+                  <div className="bg-muted aspect-[4/3] flex items-center justify-center">
+                    <div className="text-center p-6">
+                      <div
+                        className="w-16 h-16 rounded-sm mx-auto mb-3 flex items-center justify-center text-xl font-bold"
+                        style={{ backgroundColor: featuredColor, color: "#fff" }}
+                      >
+                        #{featured.number}
+                      </div>
                     </div>
                   </div>
+                  <div className="p-4 bg-card">
+                    <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">The Next Expedition</p>
+                    <h3 className="font-display text-lg font-bold leading-tight">
+                      {featured.name.replace("Panchina ", "")}:<br />
+                      <span className="font-editorial italic font-normal">The Horizon</span>
+                    </h3>
+                    <p className="text-xs text-muted-foreground font-editorial mt-2 line-clamp-2">
+                      {featured.description || "Questa panchina gigante invita i visitatori a fermarsi, sedersi e tornare bambini."}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wider">
+                      Difficulty: Moderate · {featured.region}
+                    </p>
+                  </div>
                 </div>
-                <div className="p-4 bg-card">
-                  <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">The Next Expedition</p>
-                  <h3 className="font-display text-lg font-bold leading-tight">
-                    {featured.name.replace("Panchina ", "")}:<br />
-                    <span className="font-editorial italic font-normal">The {featured.color} Horizon</span>
-                  </h3>
-                  <p className="text-xs text-muted-foreground font-editorial mt-2 line-clamp-2">
-                    {featured.description}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wider">
-                    Difficulty: Moderate · {featured.region}
-                  </p>
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Right column */}
@@ -168,9 +182,9 @@ const ProgressPage = () => {
                 <div className="editorial-rule mb-5" />
 
                 <div className="grid grid-cols-3 gap-4">
-                  {bigBenches.map((bench) => {
+                  {benches.slice(0, 12).map((bench) => {
                     const isVisited = visitedIds.includes(bench.id);
-                    const bColor = benchColorMap[bench.color] || "#C4572A";
+                    const bColor = bench.colors?.[0] || "#C4572A";
                     return (
                       <div
                         key={bench.id}
@@ -197,7 +211,7 @@ const ProgressPage = () => {
                         </div>
                         {/* Date label */}
                         <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                          {isVisited ? bench.installed : "—"}
+                          {isVisited && bench.installed_on ? new Date(bench.installed_on).getFullYear() : "—"}
                         </p>
                         {/* Name */}
                         <p className={`text-xs font-editorial italic leading-tight ${

@@ -1,18 +1,28 @@
-import { bigBenches } from "@/data/benches";
+import { useBenches } from "@/hooks/useBenches";
 import { Progress } from "@/components/ui/progress";
-import { Trophy, MapPin, TrendingUp } from "lucide-react";
+import { Trophy, MapPin, TrendingUp, Loader2 } from "lucide-react";
 
 interface ProgressTrackerProps {
   visitedIds: number[];
 }
 
 const ProgressTracker = ({ visitedIds }: ProgressTrackerProps) => {
-  const total = bigBenches.length;
-  const visited = visitedIds.length;
-  const percentage = Math.round((visited / total) * 100);
+  const { data: benches = [], isLoading } = useBenches();
+
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-editorial)] border border-border flex items-center justify-center">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  const total = benches.length;
+  const visitedCount = visitedIds.length;
+  const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
 
   const regionsVisited = new Set(
-    bigBenches.filter(b => visitedIds.includes(b.id)).map(b => b.region)
+    benches.filter(b => visitedIds.includes(b.id)).map(b => b.region)
   ).size;
 
   return (
@@ -27,7 +37,7 @@ const ProgressTracker = ({ visitedIds }: ProgressTrackerProps) => {
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs">
           <span className="text-muted-foreground font-editorial">Panchine visitate</span>
-          <span className="font-bold">{visited}/{total}</span>
+          <span className="font-bold">{visitedCount}/{total}</span>
         </div>
         <Progress value={percentage} className="h-2" />
         <p className="text-xs text-muted-foreground text-right">{percentage}%</p>
