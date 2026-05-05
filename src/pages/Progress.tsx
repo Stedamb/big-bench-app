@@ -2,6 +2,7 @@ import Header from "@/components/Header";
 import { Check, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches } from "@/hooks/useBenches";
 
@@ -29,7 +30,8 @@ const ProgressPage = () => {
   const { data: benches = [], isLoading } = useBenches();
 
   const total = benches.length;
-  const visitedCount = visitedIds.length;
+  const benchIds = new Set(benches.map(b => b.id));
+  const visitedCount = visitedIds.filter(id => benchIds.has(id)).length;
   const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
 
   const regionsVisited = new Set(
@@ -211,7 +213,7 @@ const ProgressPage = () => {
                         </div>
                         {/* Date label */}
                         <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                          {isVisited && bench.installed_on ? new Date(bench.installed_on).getFullYear() : "—"}
+                          {isVisited && bench.installed_on ? parseLocalDate(bench.installed_on).getFullYear() : "—"}
                         </p>
                         {/* Name */}
                         <p className={`text-xs font-editorial italic leading-tight ${

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBench } from "@/hooks/useBenches";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
@@ -78,8 +79,9 @@ const BenchDetailPage = () => {
   const communityPhotos = useMemo(() => posts.filter(p => p.image_url), [posts]);
   const communityReviews = useMemo(() => posts.filter(p => p.content || p.rating), [posts]);
 
-  const avgRating = communityReviews.length > 0 
-    ? communityReviews.reduce((s, r) => s + (r.rating || 0), 0) / communityReviews.length 
+  const ratedReviews = communityReviews.filter(r => r.rating != null);
+  const avgRating = ratedReviews.length > 0 
+    ? ratedReviews.reduce((s, r) => s + r.rating!, 0) / ratedReviews.length 
     : 0;
 
   const handlePostSubmit = async () => {
@@ -203,7 +205,7 @@ const BenchDetailPage = () => {
             </p>
             {bench.installed_on && (
               <p className="font-editorial text-base leading-relaxed mt-4 text-muted-foreground">
-                Installata il {new Date(bench.installed_on).toLocaleDateString("it-IT", { year: 'numeric', month: 'long', day: 'numeric' })} come parte del Big Bench Community
+                Installata il {parseLocalDate(bench.installed_on).toLocaleDateString("it-IT", { year: 'numeric', month: 'long', day: 'numeric' })} come parte del Big Bench Community
                 Project ideato da Chris Bangle.
               </p>
             )}
@@ -426,7 +428,7 @@ const BenchDetailPage = () => {
                     Anno
                   </p>
                   <p className="font-display text-2xl font-bold">
-                    {new Date(bench.installed_on).getFullYear()}
+                    {parseLocalDate(bench.installed_on).getFullYear()}
                   </p>
                 </div>
               )}

@@ -72,9 +72,11 @@ const PostCard = ({ post }: { post: CommunityPost }) => {
           <MapPin className="w-3 h-3" />
           {post.benches?.name || `Bench No. ${post.bench_id}`}
         </Link>
-        <p className="font-editorial text-base leading-relaxed text-foreground/90 italic">
-          "{post.content}"
-        </p>
+        {post.content && (
+          <p className="font-editorial text-base leading-relaxed text-foreground/90 italic">
+            "{post.content}"
+          </p>
+        )}
       </CardContent>
 
       <CardFooter className="p-4 pt-0 border-t border-border/50 mt-2">
