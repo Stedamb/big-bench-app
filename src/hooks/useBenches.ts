@@ -51,3 +51,36 @@ export const useBenches = () => {
     },
   });
 };
+
+export const useBench = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ["bench", id],
+    enabled: !!id && /^\d+$/.test(id),
+    queryFn: async () => {
+      if (!id || !/^\d+$/.test(id)) return null;
+      
+      const { data, error } = await supabase
+        .from("benches")
+        .select(`
+          *,
+          bench_colors (
+            color_hex,
+            sort_order
+          )
+        `)
+        .eq("id", parseInt(id, 10))
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) return null;
+
+      return {
+        ...data,
+        number: data.id,
+        colors: (data.bench_colors as any[])
+          ?.sort((a: any, b: any) => a.sort_order - b.sort_order)
+          .map((c: any) => c.color_hex) || []
+      } as Bench;
+    },
+  });
+};
