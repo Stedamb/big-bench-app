@@ -35,20 +35,6 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
           </p>
         </div>
       </div>
-
-      {/* Description */}
-      <p className="text-xs text-muted-foreground font-editorial leading-relaxed mt-2 line-clamp-3">
-        {bench.description}
-      </p>
-
-      {/* Altitude */}
-      {bench.altitude_m && (
-        <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
-          <Mountain className="w-3 h-3" />
-          {bench.altitude_m}m s.l.m.
-        </div>
-      )}
-
       {/* Actions */}
       <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border">
         <Button
