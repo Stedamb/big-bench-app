@@ -56,7 +56,7 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
 
           {/* Title */}
           <h2 className="font-display text-2xl sm:text-3xl font-bold leading-tight mb-2">
-            The {bench.name.replace("Panchina ", "")}
+            {bench.name}
           </h2>
 
           {/* Location badge */}
@@ -83,25 +83,6 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
             </div>
             {/* Simulated photo border */}
             <div className="absolute inset-2 border border-border/40 rounded pointer-events-none" />
-          </div>
-
-          {/* Description with drop cap */}
-          <p className="font-editorial text-sm leading-relaxed drop-cap mb-5">
-            {bench.description || "Questa panchina gigante invita i visitatori a fermarsi, sedersi e tornare bambini di fronte alla meraviglia del paesaggio circostante."}
-          </p>
-
-          {/* Stats row */}
-          <div className="grid grid-cols-2 gap-4 py-4 border-y border-border mb-5">
-            <div>
-              <p className="text-2xl font-display font-bold">{bench.altitude_m ?? "?"}<span className="text-sm font-normal text-muted-foreground">m</span></p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Altitudine</p>
-            </div>
-            <div>
-              <p className="text-2xl font-display font-bold">
-                {bench.installed_on ? parseLocalDate(bench.installed_on).getFullYear() : "?"}
-              </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Anno Vivo</p>
-            </div>
           </div>
 
           {/* Installed info */}
