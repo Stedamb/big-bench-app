@@ -47,13 +47,14 @@ function FitBounds({ benches }: { benches: Bench[] }) {
 }
 
 interface BenchMapProps {
+  benches: Bench[];
+  isLoading: boolean;
   visitedIds: number[];
   onToggleVisited: (id: number) => void;
   onSelectBench: (bench: Bench) => void;
 }
 
-const BenchMap = ({ visitedIds, onToggleVisited, onSelectBench }: BenchMapProps) => {
-  const { data: benches = [], isLoading } = useBenches();
+const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench }: BenchMapProps) => {
 
   if (isLoading) {
     return (

@@ -98,7 +98,7 @@ const BenchDetailPage = () => {
       benchId: bench!.id,
       content: newContent,
       rating: newRating,
-      imageFile: selectedFile || undefined,
+      imageFiles: selectedFile ? [selectedFile] : [],
     });
 
     setIsDialogOpen(false);

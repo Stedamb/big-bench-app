@@ -8,7 +8,6 @@ export interface CommunityPost {
   user_id: string;
   bench_id: number;
   content: string | null;
-  image_url: string | null;
   rating: number | null;
   created_at: string;
   profiles: {
@@ -18,6 +17,10 @@ export interface CommunityPost {
   benches: {
     name: string;
   } | null;
+  community_post_images: {
+    id: string;
+    image_url: string;
+  }[];
 }
 
 export const useCommunityPosts = (benchId?: number) => {
@@ -32,7 +35,8 @@ export const useCommunityPosts = (benchId?: number) => {
         .select(`
           *,
           profiles:user_id (display_name, avatar_url),
-          benches:bench_id (name)
+          benches:bench_id (name),
+          community_post_images (id, image_url)
         `)
         .order("created_at", { ascending: false });
 
@@ -51,7 +55,7 @@ export const useCommunityPosts = (benchId?: number) => {
     const fileName = `${Math.random()}.${fileExt}`;
     const filePath = `community/${fileName}`;
 
-    const { error: uploadError, data } = await supabase.storage
+    const { error: uploadError } = await supabase.storage
       .from("bench-photos")
       .upload(filePath, file);
 
@@ -63,7 +67,7 @@ export const useCommunityPosts = (benchId?: number) => {
       .from("bench-photos")
       .getPublicUrl(filePath);
 
-    return publicUrl;
+    return { publicUrl, filePath };
   };
 
   const createPost = useMutation({
@@ -71,30 +75,49 @@ export const useCommunityPosts = (benchId?: number) => {
       benchId,
       content,
       rating,
-      imageFile,
+      imageFiles = [],
     }: {
       benchId: number;
       content?: string;
       rating?: number;
-      imageFile?: File;
+      imageFiles?: File[];
     }) => {
       if (!user) throw new Error("Must be logged in to post");
 
-      let imageUrl = null;
-      if (imageFile) {
-        imageUrl = await uploadImage(imageFile);
+      // 1. Create the post
+      const { data: post, error: postError } = await supabase
+        .from("community_posts")
+        .insert({
+          user_id: user.id,
+          bench_id: benchId,
+          content,
+          rating,
+        })
+        .select()
+        .single();
+
+      if (postError) throw postError;
+
+      // 2. Upload images and link them
+      if (imageFiles.length > 0) {
+        const uploadPromises = imageFiles.map(async (file) => {
+          const { publicUrl, filePath } = await uploadImage(file);
+          return {
+            post_id: post.id,
+            image_url: publicUrl,
+            storage_path: filePath,
+          };
+        });
+
+        const imageData = await Promise.all(uploadPromises);
+        const { error: imagesError } = await supabase
+          .from("community_post_images")
+          .insert(imageData);
+
+        if (imagesError) throw imagesError;
       }
 
-      const { data, error } = await supabase.from("community_posts").insert({
-        user_id: user.id,
-        bench_id: benchId,
-        content,
-        rating,
-        image_url: imageUrl,
-      }).select().single();
-
-      if (error) throw error;
-      return data;
+      return post;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community-posts"] });

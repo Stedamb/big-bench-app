@@ -20,6 +20,8 @@ const Stars = ({ value }: { value: number }) => (
 );
 
 const PostCard = ({ post }: { post: CommunityPost }) => {
+  const hasImages = post.community_post_images && post.community_post_images.length > 0;
+  
   return (
     <Card className="overflow-hidden border-border bg-card shadow-[var(--shadow-editorial)] group">
       <CardHeader className="p-4 flex flex-row items-center gap-3 space-y-0">
@@ -42,13 +44,23 @@ const PostCard = ({ post }: { post: CommunityPost }) => {
         {post.rating && <Stars value={post.rating} />}
       </CardHeader>
 
-      {post.image_url && (
-        <div className="aspect-video relative overflow-hidden bg-muted">
-          <img 
-            src={post.image_url} 
-            alt="Community post" 
-            className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
-          />
+      {hasImages && (
+        <div className={`grid ${post.community_post_images.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-0.5 relative overflow-hidden bg-muted aspect-video`}>
+          {post.community_post_images.slice(0, 4).map((img, i) => (
+            <img 
+              key={img.id}
+              src={img.image_url} 
+              alt="Community post" 
+              className={`object-cover w-full h-full transition-transform duration-500 group-hover:scale-105 ${
+                post.community_post_images.length === 3 && i === 0 ? 'row-span-2' : ''
+              }`}
+            />
+          ))}
+          {post.community_post_images.length > 4 && (
+            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-2 py-1 rounded-sm font-bold uppercase tracking-widest">
+              +{post.community_post_images.length - 4} foto
+            </div>
+          )}
         </div>
       )}
 
@@ -73,7 +85,7 @@ const PostCard = ({ post }: { post: CommunityPost }) => {
           </div>
           <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider">
             <Camera className="w-3.5 h-3.5" />
-            {post.image_url ? "1 foto" : "no foto"}
+            {post.community_post_images.length} foto
           </div>
         </div>
       </CardFooter>
