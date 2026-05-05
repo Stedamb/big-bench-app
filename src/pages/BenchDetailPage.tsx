@@ -17,6 +17,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
@@ -523,9 +524,7 @@ const BenchDetailPage = () => {
         </aside>
       </main>
 
-      <footer className="border-t border-border py-6 text-center text-xs uppercase tracking-[0.25em] text-muted-foreground">
-        Big Bench Gazette · Est. 2010
-      </footer>
+      <Footer />
     </div>
   );
 };

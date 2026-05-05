@@ -1,0 +1,64 @@
+/* ==========================================================================
+   COMPONENT STYLES — Reusable UI Patterns
+   
+   Editorial design system components:
+   - Editorial rules (thin, thick, double)
+   - Typography utilities (font-editorial, font-display, drop-cap)
+   - Bench state indicators
+   ========================================================================== */
+
+/* ---- Editorial Rules ---- */
+/* Thin rule — subtle section divider */
+.editorial-rule {
+  border-top: var(--border-rule);
+}
+
+/* Thick rule — bold section break */
+.editorial-rule-thick {
+  border-top: var(--border-rule-thick);
+}
+
+/* Double rule — decorative header/footer accent */
+.editorial-rule-double {
+  border-top: var(--border-rule-double);
+}
+
+/* Vertical rule — sidebar/inline divider */
+.editorial-rule-vertical {
+  border-left: var(--border-rule);
+}
+
+/* ---- Typography Utilities ---- */
+.font-editorial {
+  font-family: var(--font-editorial);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ---- Drop Cap ---- */
+/* First letter styled large for editorial opening paragraphs */
+.drop-cap::first-letter {
+  font-family: var(--font-display);
+  float: left;
+  font-size: 3.5em;
+  line-height: 0.8;
+  padding-right: 0.08em;
+  padding-top: 0.07em;
+  font-weight: 700;
+  color: hsl(var(--primary));
+}
+
+/* ---- Bench State Indicators ---- */
+.bench-visited {
+  @apply bg-accent text-accent-foreground;
+}
+
+.bench-not-visited {
+  @apply bg-muted text-muted-foreground;
+}

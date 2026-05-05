@@ -1,0 +1,14 @@
+/* ==========================================================================
+   UTILITIES — Custom Utility Classes
+   
+   Font family shortcuts and other utility overrides.
+   ========================================================================== */
+
+/* ---- Font Family Utilities ---- */
+.font-editorial {
+  font-family: var(--font-editorial);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}

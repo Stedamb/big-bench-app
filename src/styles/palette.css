@@ -1,0 +1,96 @@
+/* ==========================================================================
+   COLOR PALETTE — BigBenchApp Design Tokens
+   
+   Naming convention:
+   - Semantic names (primary, accent, muted) over descriptive ones
+   - HSL values without hsl() wrapper — Tailwind applies hsl() at usage
+   - Light theme is default (:root), dark theme overrides (.dark)
+   
+   Brand Colors:
+   - Primary:   Terracotta/Rust — the Big Bench signature warm red
+   - Accent:    Olive Green — nature-inspired secondary
+   - Neutral:   Warm Creams & Grays — editorial paper feel
+   ========================================================================== */
+
+:root {
+  /* ---- Surface Colors ---- */
+  --background:          36 60% 96%;   /* Warm cream — page background */
+  --foreground:          0 0% 10%;     /* Near-black — primary text */
+  --card:                36 50% 98%;   /* Lighter cream — card surfaces */
+  --card-foreground:     0 0% 10%;     /* Near-black — card text */
+  --popover:             36 50% 98%;   /* Same as card — popover bg */
+  --popover-foreground:  0 0% 10%;     /* Near-black — popover text */
+
+  /* ---- Brand Colors ---- */
+  --primary:             14 66% 47%;   /* Terracotta — main brand */
+  --primary-foreground:  36 60% 96%;   /* Cream — text on primary */
+  --accent:              130 20% 40%;  /* Olive green — secondary brand */
+  --accent-foreground:   36 60% 96%;   /* Cream — text on accent */
+
+  /* ---- Neutral Scale ---- */
+  --secondary:           36 30% 90%;   /* Light warm gray */
+  --secondary-foreground: 0 0% 15%;   /* Dark gray */
+  --muted:               36 20% 92%;   /* Soft warm gray */
+  --muted-foreground:    0 0% 40%;     /* Medium gray — muted text */
+
+  /* ---- Feedback Colors ---- */
+  --destructive:         0 84.2% 60.2%;  /* Red — errors/destructive */
+  --destructive-foreground: 210 40% 98%; /* Near-white — text on red */
+
+  /* ---- Border & Ring ---- */
+  --border:              36 20% 85%;   /* Warm gray border */
+  --input:               36 20% 85%;   /* Same as border — input fields */
+  --ring:                14 66% 47%;   /* Same as primary — focus rings */
+  --radius:              0.375rem;     /* 6px — default border radius */
+
+  /* ---- Sidebar Colors ---- */
+  --sidebar-background:         36 30% 94%;
+  --sidebar-foreground:         0 0% 15%;
+  --sidebar-primary:            14 66% 47%;
+  --sidebar-primary-foreground: 36 60% 96%;
+  --sidebar-accent:             36 20% 90%;
+  --sidebar-accent-foreground:  0 0% 15%;
+  --sidebar-border:             36 20% 85%;
+  --sidebar-ring:               14 66% 47%;
+}
+
+.dark {
+  /* ---- Surface Colors ---- */
+  --background:          0 0% 8%;      /* Near-black */
+  --foreground:          36 30% 90%;   /* Warm light gray */
+  --card:                0 0% 11%;     /* Dark gray */
+  --card-foreground:     36 30% 90%;   /* Warm light gray */
+  --popover:             0 0% 11%;     /* Same as card */
+  --popover-foreground:  36 30% 90%;   /* Warm light gray */
+
+  /* ---- Brand Colors ---- */
+  --primary:             14 66% 52%;   /* Brighter terracotta for dark bg */
+  --primary-foreground:  0 0% 8%;      /* Near-black */
+  --accent:              130 20% 45%;  /* Brighter olive for dark bg */
+  --accent-foreground:   0 0% 8%;      /* Near-black */
+
+  /* ---- Neutral Scale ---- */
+  --secondary:           0 0% 15%;
+  --secondary-foreground: 36 30% 90%;
+  --muted:               0 0% 15%;
+  --muted-foreground:    36 15% 60%;   /* Muted warm gray */
+
+  /* ---- Feedback Colors ---- */
+  --destructive:         0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+
+  /* ---- Border & Ring ---- */
+  --border:              0 0% 20%;
+  --input:               0 0% 20%;
+  --ring:                14 66% 52%;
+
+  /* ---- Sidebar Colors ---- */
+  --sidebar-background:         0 0% 10%;
+  --sidebar-foreground:         36 30% 90%;
+  --sidebar-primary:            14 66% 52%;
+  --sidebar-primary-foreground: 0 0% 8%;
+  --sidebar-accent:             0 0% 15%;
+  --sidebar-accent-foreground:  36 30% 90%;
+  --sidebar-border:             0 0% 20%;
+  --sidebar-ring:               14 66% 52%;
+}

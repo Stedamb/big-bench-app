@@ -46,7 +46,7 @@ const Header = () => {
           </div>
         </Link>
 
-        <nav className="flex items-center gap-4 sm:gap-6">
+        <nav className="flex items-center gap-3 sm:gap-6">
           <Link
             to="/"
             className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -55,7 +55,7 @@ const Header = () => {
           >
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" />
-              Mappa
+              <span className="hidden sm:inline">Mappa</span>
             </span>
           </Link>
           <Link
@@ -64,7 +64,8 @@ const Header = () => {
               location.pathname === "/community" ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            Comunità
+            <span className="hidden sm:inline">Comunità</span>
+            <span className="sm:hidden">Com.</span>
           </Link>
           <Link
             to="/progress"
@@ -72,7 +73,8 @@ const Header = () => {
               location.pathname === "/progress" ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            Passaporto
+            <span className="hidden sm:inline">Passaporto</span>
+            <span className="sm:hidden">Pass.</span>
           </Link>
 
           {user ? (
