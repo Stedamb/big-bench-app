@@ -62,9 +62,11 @@ const MapFilters = ({
           className="pl-9 pr-8 h-9 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
         />
         {hasSearch && (
-          <button 
+          <button
+            type="button"
             onClick={() => onSearchChange("")}
             className="absolute right-2 p-1 hover:bg-muted rounded-full transition-colors"
+            aria-label="Clear search"
           >
             <X className="w-3 h-3 text-muted-foreground" />
           </button>

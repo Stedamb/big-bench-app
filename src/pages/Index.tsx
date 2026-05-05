@@ -74,7 +74,7 @@ const Index = () => {
             onRegionChange={(r) => {
               setSelectedRegion(r);
               if (r !== "all") {
-                setSelectedCountry("Italy");
+                setSelectedCountry("IT");
               }
             }}
             countries={countries}
