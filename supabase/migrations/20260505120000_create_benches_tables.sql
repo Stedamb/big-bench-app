@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.benches (
   altitude_m INTEGER,
   description TEXT,
   artist TEXT,
-  installed_on TEXT,
+  installed_on DATE,
   is_official BOOLEAN NOT NULL DEFAULT true,
   image_url TEXT,
   source_marker_id INTEGER
@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS public.bench_colors (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   bench_id INTEGER NOT NULL REFERENCES public.benches(id) ON DELETE CASCADE,
   color_hex TEXT NOT NULL,
-  sort_order INTEGER NOT NULL DEFAULT 0
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  UNIQUE(bench_id, color_hex)
 );
 
 -- Enable RLS
@@ -68,4 +69,4 @@ INSERT INTO public.bench_colors (bench_id, color_hex, sort_order) VALUES
 (10, '#14B8A6', 0),
 (11, '#C4572A', 0),
 (12, '#A78BFA', 0)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (bench_id, color_hex) DO NOTHING;
