@@ -25,6 +25,7 @@ export interface Bench {
 export const useBenches = () => {
   return useQuery({
     queryKey: ["benches"],
+    staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async () => {
       const { data, error } = await supabase
         .from("benches")
@@ -56,6 +57,7 @@ export const useBench = (id: string | undefined) => {
   return useQuery({
     queryKey: ["bench", id],
     enabled: !!id && /^\d+$/.test(id),
+    staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async () => {
       if (!id || !/^\d+$/.test(id)) return null;
       

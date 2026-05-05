@@ -9,7 +9,7 @@ import { useBenches, type Bench } from "@/hooks/useBenches";
 
 const Index = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
-  const { data: benches = [], isLoading } = useBenches();
+  const { data: benches = [], isFetching } = useBenches();
   const [selectedBench, setSelectedBench] = useState<Bench | null>(null);
 
   // Filters state
@@ -53,7 +53,7 @@ const Index = () => {
         <div className="absolute inset-0">
           <BenchMap
             benches={filteredBenches}
-            isLoading={isLoading}
+            isLoading={isFetching}
             visitedIds={visitedIds}
             onToggleVisited={toggleVisited}
             onSelectBench={setSelectedBench}
@@ -71,7 +71,12 @@ const Index = () => {
               setSelectedRegion("all"); // Reset region when country changes
             }}
             selectedRegion={selectedRegion}
-            onRegionChange={setSelectedRegion}
+            onRegionChange={(r) => {
+              setSelectedRegion(r);
+              if (r !== "all") {
+                setSelectedCountry("Italy");
+              }
+            }}
             countries={countries}
             regions={regions}
             totalResults={filteredBenches.length}
@@ -79,7 +84,7 @@ const Index = () => {
         </div>
 
         {/* Progress overlay */}
-        <div className="absolute top-20 left-4 z-[1000] w-72 hidden lg:block">
+        <div className="absolute top-4 left-4 z-[1000] w-72 hidden lg:block">
           <ProgressTracker visitedIds={visitedIds} />
         </div>
 
