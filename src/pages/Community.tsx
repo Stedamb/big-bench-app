@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
-import { Camera, MapPin, MessageSquare, Star, Loader2, ArrowLeft, Mountain } from "lucide-react";
+import { Camera, MapPin, MessageSquare, Star, Loader2, ArrowLeft } from "lucide-react";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { useCommunityPosts, type CommunityPost } from "@/hooks/useCommunityPosts";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -169,19 +170,7 @@ const Community = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border py-12 bg-card">
-        <div className="container text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
-            <Mountain className="w-5 h-5 text-primary" />
-            <span className="font-display font-bold tracking-widest text-lg uppercase">Big Bench App</span>
-          </div>
-          <div className="editorial-rule max-w-xs mx-auto mb-6" />
-          <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-            © 2026 Cronache dell'Orizzonte · Archivio Pubblico
-          </p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

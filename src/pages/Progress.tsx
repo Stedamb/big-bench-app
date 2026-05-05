@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import { Check, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
@@ -241,25 +242,7 @@ const ProgressPage = () => {
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="border-t border-border mt-8">
-          <div className="container max-w-4xl py-8 text-center">
-            <h2 className="font-display text-xl sm:text-2xl font-bold tracking-wide uppercase mb-4">
-              The Big Bench Gazette
-            </h2>
-            <div className="editorial-rule mb-4" />
-            <div className="flex flex-wrap justify-center gap-6 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-              <span>Archives</span>
-              <span>The Map</span>
-              <span>Terms of Service</span>
-              <span>Privacy Policy</span>
-              <span>Change Edition</span>
-            </div>
-            <p className="text-[10px] text-muted-foreground mt-4">
-              © 2024 The Big Bench Gazette · All rights reserved · Printed in Piedmont
-            </p>
-          </div>
-        </div>
+        <Footer />
       </main>
     </div>
   );
