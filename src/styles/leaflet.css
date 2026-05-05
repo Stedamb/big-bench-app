@@ -1,0 +1,34 @@
+/* ==========================================================================
+   LEAFLET OVERRIDES — Map Styling
+   
+   Custom styles for Leaflet map components to match the editorial design.
+   ========================================================================== */
+
+.leaflet-container {
+  font-family: var(--font-body) !important;
+  background: hsl(var(--muted)) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius) !important;
+  box-shadow: var(--shadow-card) !important;
+  background: hsl(var(--card)) !important;
+  color: hsl(var(--card-foreground)) !important;
+  font-family: var(--font-body) !important;
+}
+
+.leaflet-popup-tip {
+  background: hsl(var(--card)) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-close-button {
+  color: hsl(var(--muted-foreground)) !important;
+  top: 8px !important;
+  right: 8px !important;
+  font-size: 18px !important;
+}

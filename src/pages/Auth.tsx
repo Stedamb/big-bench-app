@@ -5,6 +5,7 @@ import { ArrowLeft, Loader2, Mail, Mountain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
+import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -105,7 +106,7 @@ const Auth = () => {
               <Mountain className="w-6 h-6 text-primary-foreground" />
             </div>
             <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2">
-              Big Bench Gazette
+              BigBenchApp
             </p>
             <h1 className="font-display text-4xl font-bold leading-tight">
               {mode === "signin" ? "Bentornato" : "Unisciti a noi"}
@@ -213,6 +214,8 @@ const Auth = () => {
           </div>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 };
