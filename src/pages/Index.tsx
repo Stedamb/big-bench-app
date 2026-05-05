@@ -19,10 +19,12 @@ const Index = () => {
 
   const filteredBenches = useMemo(() => {
     return benches.filter((bench) => {
+      const searchLower = searchQuery.toLowerCase().trim();
       const matchesSearch =
-        bench.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        bench.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        String(bench.number).includes(searchQuery);
+        !searchLower ||
+        (bench.name?.toLowerCase().includes(searchLower)) ||
+        (bench.location?.toLowerCase().includes(searchLower)) ||
+        String(bench.number).includes(searchLower);
 
       const matchesCountry = selectedCountry === "all" || bench.country === selectedCountry;
       const matchesRegion = selectedRegion === "all" || bench.region === selectedRegion;
@@ -74,7 +76,7 @@ const Index = () => {
             onRegionChange={(r) => {
               setSelectedRegion(r);
               if (r !== "all") {
-                setSelectedCountry("IT");
+                setSelectedCountry("Italy");
               }
             }}
             countries={countries}
