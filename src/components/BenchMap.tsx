@@ -55,50 +55,47 @@ interface BenchMapProps {
 }
 
 const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench }: BenchMapProps) => {
-
-  if (isLoading) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-slate-50">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 bg-primary/20 rounded-full" />
-          <p className="text-muted-foreground animate-bounce">Caricamento panchine...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <MapContainer
-      center={[44.9, 9.5]}
-      zoom={7}
-      className="w-full h-full"
-      zoomControl={true}
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />
-      <FitBounds benches={benches} />
-      {benches.map((bench) => {
-        const visited = visitedIds.includes(bench.id);
-        return (
-          <Marker
-            key={bench.id}
-            position={[bench.lat, bench.lng]}
-            icon={createBenchIcon(bench.colors)}
-          >
-            <Popup maxWidth={320} minWidth={280}>
-              <BenchPopup
-                bench={bench as any}
-                visited={visited}
-                onToggleVisited={() => onToggleVisited(bench.id)}
-                onViewDetail={() => onSelectBench(bench)}
-              />
-            </Popup>
-          </Marker>
-        );
-      })}
-    </MapContainer>
+    <div className="relative w-full h-full">
+      {isLoading && (
+        <div className="absolute top-4 right-4 z-[1001] bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
+          <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs font-medium text-muted-foreground">Aggiornamento...</span>
+        </div>
+      )}
+      
+      <MapContainer
+        center={[44.9, 9.5]}
+        zoom={7}
+        className="w-full h-full"
+        zoomControl={true}
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        />
+        <FitBounds benches={benches} />
+        {benches.map((bench) => {
+          const visited = visitedIds.includes(bench.id);
+          return (
+            <Marker
+              key={bench.id}
+              position={[bench.lat, bench.lng]}
+              icon={createBenchIcon(bench.colors)}
+            >
+              <Popup maxWidth={320} minWidth={280}>
+                <BenchPopup
+                  bench={bench as any}
+                  visited={visited}
+                  onToggleVisited={() => onToggleVisited(bench.id)}
+                  onViewDetail={() => onSelectBench(bench)}
+                />
+              </Popup>
+            </Marker>
+          );
+        })}
+      </MapContainer>
+    </div>
   );
 };
 
