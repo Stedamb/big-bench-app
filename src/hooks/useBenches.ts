@@ -55,9 +55,9 @@ export const useBenches = () => {
 export const useBench = (id: string | undefined) => {
   return useQuery({
     queryKey: ["bench", id],
-    enabled: !!id,
+    enabled: !!id && /^\d+$/.test(id),
     queryFn: async () => {
-      if (!id) return null;
+      if (!id || !/^\d+$/.test(id)) return null;
       
       const { data, error } = await supabase
         .from("benches")
@@ -68,7 +68,7 @@ export const useBench = (id: string | undefined) => {
             sort_order
           )
         `)
-        .eq("id", parseInt(id))
+        .eq("id", parseInt(id, 10))
         .maybeSingle();
 
       if (error) throw error;

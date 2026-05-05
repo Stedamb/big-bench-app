@@ -18,7 +18,8 @@ const ProgressTracker = ({ visitedIds }: ProgressTrackerProps) => {
   }
 
   const total = benches.length;
-  const visitedCount = visitedIds.length;
+  const benchIds = new Set(benches.map(b => b.id));
+  const visitedCount = visitedIds.filter(id => benchIds.has(id)).length;
   const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
 
   const regionsVisited = new Set(

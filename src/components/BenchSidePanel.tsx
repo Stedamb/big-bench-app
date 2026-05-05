@@ -1,6 +1,7 @@
 import { X, MapPin, Mountain, Calendar, Palette, Camera, Check, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { parseLocalDate } from "@/lib/utils";
 import type { Bench } from "@/hooks/useBenches";
 
 interface BenchSidePanelProps {
@@ -92,12 +93,12 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
           {/* Stats row */}
           <div className="grid grid-cols-2 gap-4 py-4 border-y border-border mb-5">
             <div>
-              <p className="text-2xl font-display font-bold">{bench.altitude_m || "?"}<span className="text-sm font-normal text-muted-foreground">m</span></p>
+              <p className="text-2xl font-display font-bold">{bench.altitude_m ?? "?"}<span className="text-sm font-normal text-muted-foreground">m</span></p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Altitudine</p>
             </div>
             <div>
               <p className="text-2xl font-display font-bold">
-                {bench.installed_on ? new Date(bench.installed_on).getFullYear() : "?"}
+                {bench.installed_on ? parseLocalDate(bench.installed_on).getFullYear() : "?"}
               </p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Anno Vivo</p>
             </div>
@@ -105,7 +106,7 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
 
           {/* Installed info */}
           <p className="text-xs text-muted-foreground font-editorial leading-relaxed mb-6">
-            {bench.installed_on ? `Installata il ${new Date(bench.installed_on).toLocaleDateString("it-IT", { year: 'numeric', month: 'long', day: 'numeric' })}` : "Parte del progetto Big Bench Community Project"}.
+            {bench.installed_on ? `Installata il ${parseLocalDate(bench.installed_on).toLocaleDateString("it-IT", { year: 'numeric', month: 'long', day: 'numeric' })}` : "Parte del progetto Big Bench Community Project"}.
             {bench.artist ? ` Creata dall'artista ${bench.artist}, questa` : " Questa"} panchina è situata nei pressi di {bench.location}, offrendo una vista panoramica
             sulle bellezze del {bench.region}.
           </p>
