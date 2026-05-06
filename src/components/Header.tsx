@@ -59,13 +59,13 @@ const Header = () => {
             </span>
           </Link>
           <Link
-            to="/community"
+            to="/guestbook"
             className={`text-sm font-medium transition-colors hover:text-primary ${
-              location.pathname === "/community" ? "text-primary" : "text-muted-foreground"
+              location.pathname === "/guestbook" ? "text-primary" : "text-muted-foreground"
             }`}
           >
-            <span className="hidden sm:inline">Comunità</span>
-            <span className="sm:hidden">Com.</span>
+            <span className="hidden sm:inline">Guestbook</span>
+            <span className="sm:hidden">Guest.</span>
           </Link>
           <Link
             to="/progress"

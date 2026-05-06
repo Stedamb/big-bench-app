@@ -7,7 +7,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index.tsx";
 import Progress from "./pages/Progress.tsx";
-import Community from "./pages/Community.tsx";
+import Guestbook from "./pages/Guestbook.tsx";
 import BenchDetailPage from "./pages/BenchDetailPage.tsx";
 import Auth from "./pages/Auth.tsx";
 import Settings from "./pages/Settings.tsx";
@@ -25,7 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/community" element={<Community />} />
+            <Route path="/guestbook" element={<Guestbook />} />
             <Route
               path="/progress"
               element={

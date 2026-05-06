@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBench } from "@/hooks/useBenches";
-import { useCommunityPosts } from "@/hooks/useCommunityPosts";
+import { useGuestbook } from "@/hooks/useGuestbook";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Dialog,
@@ -83,7 +83,7 @@ const BenchDetailPage = () => {
   const { user } = useAuth();
   const { data: bench, isLoading, error } = useBench(id);
   const { visitedIds, toggleVisited } = useVisitedBenches();
-  const { posts, isLoading: isLoadingPosts, createPost } = useCommunityPosts(id ? parseInt(id) : undefined);
+  const { posts, isLoading: isLoadingPosts, createPost } = useGuestbook(id ? parseInt(id) : undefined);
 
   const stampLocations = bench?.stamp_locations || [];
 
@@ -91,7 +91,7 @@ const BenchDetailPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newContent, setNewContent] = useState("");
   const [newRating, setNewRating] = useState(5);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const visited = bench ? visitedIds.includes(bench.id) : false;
@@ -108,7 +108,13 @@ const BenchDetailPage = () => {
     });
   }, [primaryColor, secondaryColor, bench]);
 
-  const communityPhotos = useMemo(() => posts.filter(p => p.image_url), [posts]);
+  const communityPhotos = useMemo(() => 
+    posts.flatMap(p => p.community_post_images.map(img => ({
+      ...img,
+      displayName: p.profiles?.display_name || "Anonimo"
+    }))), 
+    [posts]
+  );
   const communityReviews = useMemo(() => posts.filter(p => p.content || p.rating), [posts]);
 
   const ratedReviews = communityReviews.filter(r => r.rating != null);
@@ -123,8 +129,8 @@ const BenchDetailPage = () => {
       return;
     }
 
-    if (!newContent && !selectedFile) {
-      toast.error("Inserisci un testo o un'immagine.");
+    if (!newContent && selectedFiles.length === 0 && !newRating) {
+      toast.error("Inserisci un testo, un'immagine o una valutazione.");
       return;
     }
 
@@ -132,12 +138,12 @@ const BenchDetailPage = () => {
       benchId: bench!.id,
       content: newContent,
       rating: newRating,
-      imageFiles: selectedFile ? [selectedFile] : [],
+      imageFiles: selectedFiles,
     });
 
     setIsDialogOpen(false);
     setNewContent("");
-    setSelectedFile(null);
+    setSelectedFiles([]);
   };
 
   if (isLoading) {
@@ -193,7 +199,7 @@ const BenchDetailPage = () => {
                   Bench No. {bench.number}
                 </span>
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {bench.region} {bench.province ? `· ${bench.province}` : ""}
+                  {bench.region} {bench.province ? `· \${bench.province}` : ""}
                 </span>
               </div>
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight mb-3">
@@ -201,7 +207,7 @@ const BenchDetailPage = () => {
               </h1>
               <p className="font-editorial italic text-lg text-muted-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                {bench.location}, {bench.region} {bench.altitude_m ? `· ${bench.altitude_m}m s.l.m.` : ""}
+                {bench.location}, {bench.region} {bench.altitude_m ? `· \${bench.altitude_m}m s.l.m.` : ""}
               </p>
             </div>
 
@@ -214,7 +220,7 @@ const BenchDetailPage = () => {
                   </span>
                 </div>
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-0.5">
-                  {communityReviews.length} recensioni
+                  {communityReviews.length} messaggi
                 </p>
               </div>
             </div>
@@ -252,7 +258,7 @@ const BenchDetailPage = () => {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                Galleria della Comunità
+                Galleria del Guestbook
               </h2>
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
@@ -263,7 +269,7 @@ const BenchDetailPage = () => {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
-                    <DialogTitle className="font-display text-xl">Condividi la tua avventura</DialogTitle>
+                    <DialogTitle className="font-display text-xl">Firma il Guestbook</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
                     <div className="space-y-2">
@@ -280,15 +286,18 @@ const BenchDetailPage = () => {
                       />
                     </div>
                     <div className="space-y-2">
-                      <p className="text-sm font-medium">La tua fotografia</p>
+                      <p className="text-sm font-medium">Le tue fotografie</p>
                       <div 
                         className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:bg-muted/50 transition-colors"
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        {selectedFile ? (
-                          <div className="flex items-center justify-center gap-2">
-                            <ImageIcon className="w-5 h-5 text-primary" />
-                            <span className="text-sm font-medium truncate max-w-[200px]">{selectedFile.name}</span>
+                        {selectedFiles.length > 0 ? (
+                          <div className="flex flex-col items-center gap-2">
+                            <div className="flex items-center justify-center gap-2">
+                              <ImageIcon className="w-5 h-5 text-primary" />
+                              <span className="text-sm font-medium">{selectedFiles.length} file selezionati</span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground uppercase">Clicca per cambiare</p>
                           </div>
                         ) : (
                           <div className="space-y-1">
@@ -301,7 +310,8 @@ const BenchDetailPage = () => {
                           ref={fileInputRef} 
                           className="hidden" 
                           accept="image/*"
-                          onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                          multiple
+                          onChange={(e) => setSelectedFiles(Array.from(e.target.files || []))}
                         />
                       </div>
                     </div>
@@ -312,7 +322,7 @@ const BenchDetailPage = () => {
                     disabled={createPost.isPending}
                   >
                     {createPost.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                    Pubblica nel diario
+                    Invia messaggio
                   </Button>
                 </DialogContent>
               </Dialog>
@@ -327,16 +337,18 @@ const BenchDetailPage = () => {
                   >
                     <img 
                       src={p.image_url!} 
-                      alt={`Bench detail ${i}`} 
+                      alt={`Bench detail \${i}`} 
                       className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
                       <p className="text-[10px] text-white font-bold truncate">
-                        di {p.profiles?.display_name || "Anonimo"}
+                        di {p.displayName}
                       </p>
                     </div>
                   </div>
                 ))
+// ... rest of logic
+
               ) : (
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
@@ -362,10 +374,10 @@ const BenchDetailPage = () => {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                Recensioni dei Visitatori
+                Guestbook
               </h2>
               <Button size="sm" variant="outline" className="h-8" onClick={() => setIsDialogOpen(true)}>
-                Scrivi recensione
+                Lascia un messaggio
               </Button>
             </div>
 
