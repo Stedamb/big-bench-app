@@ -1,6 +1,7 @@
 import { useBenches } from "@/hooks/useBenches";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, MapPin, TrendingUp, Loader2 } from "lucide-react";
+import { useMemo } from "react";
 
 interface ProgressTrackerProps {
   visitedIds: number[];
@@ -17,14 +18,20 @@ const ProgressTracker = ({ visitedIds }: ProgressTrackerProps) => {
     );
   }
 
+  // Convert to Set for O(1) lookups
+  const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
+
   const total = benches.length;
   const benchIds = new Set(benches.map(b => b.id));
-  const visitedCount = visitedIds.filter(id => benchIds.has(id)).length;
+  const visitedCount = benches.filter(b => visitedSet.has(b.id) && benchIds.has(b.id)).length;
   const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
 
-  const regionsVisited = new Set(
-    benches.filter(b => visitedIds.includes(b.id)).map(b => b.region)
-  ).size;
+  const regionsVisited = useMemo(() => 
+    new Set(
+      benches.filter(b => visitedSet.has(b.id)).map(b => b.region)
+    ).size,
+    [benches, visitedSet]
+  );
 
   return (
     <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-editorial)] border border-border">
