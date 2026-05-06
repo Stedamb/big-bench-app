@@ -1,0 +1,16 @@
+# Core configuration for CodeRabbit
+# Documentation: https://docs.coderabbit.ai/getting-started/configure-coderabbit
+
+# Ignore specific paths from analysis
+# Patterns are relative to the repository root
+# Standard glob patterns are supported
+path_filters:
+  - "scripts/**"
+  - "!scripts/README.md" # Optional: include documentation if it exists
+
+# Review settings
+reviews:
+  # Enable/disable high-level summary of changes
+  summary: true
+  # Review only the lines changed in the PR
+  incremental_review: true
