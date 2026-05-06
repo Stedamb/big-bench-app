@@ -15,6 +15,16 @@ import {
   Upload,
   Loader2,
   Image as ImageIcon,
+  Clock,
+  Phone,
+  Mail,
+  Info,
+  Store,
+  Coffee,
+  Utensils,
+  Hotel,
+  Wine,
+  Building,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -48,6 +58,25 @@ const Stars = ({ value, onSelect }: { value: number; onSelect?: (v: number) => v
   </div>
 );
 
+const LocationIcon = ({ type }: { type: string }) => {
+  switch (type?.toLowerCase()) {
+    case "bar":
+      return <Coffee className="w-3.5 h-3.5" />;
+    case "ristorante":
+      return <Utensils className="w-3.5 h-3.5" />;
+    case "albergo":
+      return <Hotel className="w-3.5 h-3.5" />;
+    case "cantina":
+      return <Wine className="w-3.5 h-3.5" />;
+    case "ufficio":
+      return <Building className="w-3.5 h-3.5" />;
+    case "negozio":
+      return <Store className="w-3.5 h-3.5" />;
+    default:
+      return <MapPin className="w-3.5 h-3.5" />;
+  }
+};
+
 const BenchDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -55,6 +84,8 @@ const BenchDetailPage = () => {
   const { data: bench, isLoading, error } = useBench(id);
   const { visitedIds, toggleVisited } = useVisitedBenches();
   const { posts, isLoading: isLoadingPosts, createPost } = useCommunityPosts(id ? parseInt(id) : undefined);
+
+  const stampLocations = bench?.stamp_locations || [];
 
   // New post state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -443,6 +474,75 @@ const BenchDetailPage = () => {
               </div>
             </div>
           </div>
+
+          {/* Stamp Locations Sidebar Section */}
+          {stampLocations.length > 0 && (
+            <div className="border border-border rounded-md bg-card p-5 space-y-6">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <Check className="w-4 h-4" />
+                </div>
+                <h3 className="font-display text-sm font-bold uppercase tracking-wider leading-tight">
+                  Dove timbrare il passaporto
+                </h3>
+              </div>
+
+              <div className="space-y-8">
+                {stampLocations.map((loc, i) => (
+                  <div key={i} className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 text-primary shrink-0">
+                        <LocationIcon type={loc.location_type || ""} />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="font-display text-base font-bold leading-snug mb-1.5">
+                          {loc.name}
+                        </h4>
+                        {loc.address && (
+                          <p className="text-sm text-muted-foreground font-editorial flex items-start gap-1.5 leading-relaxed">
+                            <MapPin className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                            {loc.address}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pl-7 space-y-3">
+                      {loc.opening_hours && (
+                        <div className="flex items-start gap-2.5 text-xs text-muted-foreground font-medium">
+                          <Clock className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span className="leading-normal">{loc.opening_hours}</span>
+                        </div>
+                      )}
+                      
+                      <div className="space-y-2">
+                        {loc.phone && (
+                          <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
+                            <Phone className="w-3.5 h-3.5 shrink-0" />
+                            <span>{loc.phone}</span>
+                          </div>
+                        )}
+                        {loc.email && (
+                          <div className="flex items-center gap-2.5 text-xs text-muted-foreground">
+                            <Mail className="w-3.5 h-3.5 shrink-0" />
+                            <span className="truncate">{loc.email}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {loc.notes && (
+                        <div className="flex items-start gap-2 text-[11px] bg-primary/5 text-primary px-3 py-2 rounded-sm border border-primary/10 leading-tight">
+                          <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                          <span className="font-bold uppercase tracking-wider">{loc.notes}</span>
+                        </div>
+                      )}
+                    </div>
+                    {i < stampLocations.length - 1 && <div className="border-b border-border/50 pt-2" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Mini map + directions */}
           <div className="border border-border rounded-md bg-card overflow-hidden">
