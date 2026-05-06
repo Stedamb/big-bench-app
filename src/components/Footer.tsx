@@ -27,10 +27,10 @@ const Footer = () => {
             Mappa
           </Link>
           <Link
-            to="/community"
+            to="/guestbook"
             className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors"
           >
-            Comunità
+            Guestbook
           </Link>
           <Link
             to="/progress"

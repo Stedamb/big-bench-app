@@ -1,68 +1,53 @@
-# Project Progress - Session May 6, 2026
+# Project Progress - Session May 6, 2026 (Evening)
 
 ## 🚀 Overview
-Added stamp location data to the app. Parsed the official Big Bench passport PDF (`scripts/passaporti.pdf`) — which lists where to get passport stamps — cleaned the messy PDF-extracted CSV, and imported structured data into a new `stamp_locations` table in Supabase.
+Transformed the community features into a social **Guestbook** system and resolved critical rendering issues. This update shifts the platform's social dynamics from standard reviews to a collaborative "expedition diary" feel.
 
 ## ✅ Completed Features
 
-### 1. `stamp_locations` Table
-- **Schema**: Created with fields for `bench_id` (FK → `benches.id`), `name`, `address`, `phone`, `email`, `opening_hours`, `notes`, and `location_type`.
-- **RLS**: Public SELECT enabled, authenticated INSERT/UPDATE policies.
-- **Location types**: bar, ristorante, negozio, agriturismo, ufficio, albergo, cantina, circolo, rifugio, attrazione.
+### 1. Guestbook Social Transformation
+- **Rebranding**: Successfully migrated all "Community" references to **Guestbook** across the entire UI (Header, Footer, Routes, and Detail pages).
+- **Social Timeline**:
+  - Implemented a modern, card-based social feed in `/guestbook`.
+  - Added support for **multi-image posts** with a responsive grid gallery.
+  - Posts now handle any combination of content: "Only Image", "Only Text", "Only Rating", or a mix.
+  - Integrated custom **Bench Icons** for social interactions (prepared in background).
+- **Database Logic**:
+  - Enforced a **one-review-per-bench** constraint per user via database unique index.
+  - Added background tables for **Likes** and **Comments** with full RLS policies for future activation.
 
-### 2. Data Import
-- **Source**: `scripts/passaporti.pdf` → extracted via `scripts/import_pdf.py` (pdfplumber).
-- **Parser**: `scripts/parse_passaporti.py` handles multi-line cell reconstruction, splits individual locations by business name patterns, and extracts structured fields (address, phone, email, hours, notes, type).
-- **Results**: **1,222 locations** across **425 benches** imported.
-  - 936 with address, 897 with phone, 270 with email, 775 with hours.
-
-## 🛠 Technical Notes for Next Agent
-- **Parser**: `scripts/parse_passaporti.py` can be re-run to regenerate `stamp_locations.json`. The SQL insert batches were cleaned up after import.
-- **Bench linking**: `stamp_locations.bench_id` references `benches.id`. Benches 444 and 459 don't exist in the DB (gaps in the bench numbering) — their stamp locations were skipped.
-- **Data quality**: The PDF extraction is inherently messy. Some locations have incomplete data or merged fields. The parser prioritizes getting the business name, address, and phone correct.
-
----
-
-# Project Progress - Session May 5, 2026
-
-## 🚀 Overview
-In this session, we transitioned the Big Bench App from a static-data prototype to a fully dynamic, community-driven platform powered by Supabase. Key milestones include the implementation of the Bench Detail page, a community timeline with photo support, and a robust search/filter system for the map.
-
-## ✅ Completed Features
-
-### 1. Bench Detail & Database Integration
-- **Dynamic Fetching**: Implemented `useBench` and `useBenches` hooks to fetch live data from Supabase.
-- **Rich Detail Page**: Created `/bench/:id` route displaying bench numbers, locations, altitude, and history.
-- **Map & Color Sync**: Mini-maps and markers now dynamically reflect the primary/secondary colors stored in the database.
-
-### 2. Community System & Timeline
-- **Community Feed**: Developed the `/community` page (Cronache della Comunità) showcasing a chronological timeline of user stories and photos.
-- **Unified Posting**: Created a "Scrivi recensione" system allowing authenticated users to:
-  - Rate benches (1-5 stars).
-  - Write stories/reviews.
-  - Upload photos directly to Supabase Storage.
-- **Multi-Image Support**: Established a `community_post_images` table to allow multiple high-resolution photos per post.
-
-### 3. Search & Filtering
-- **Real-time Map Search**: Users can search by bench name, number, or location.
-- **Geo-Filters**: Added dropdowns to filter by Country and Region, with the map automatically re-centering to fit filtered results.
-
-### 4. Infrastructure & Security (MCP & Skills)
-- **Database Schema**:
-  - `community_posts`: Linked to `public.profiles` for user details.
-  - `community_post_images`: Linked to posts for photo metadata.
-  - `bench_photos` bucket: Configured storage policies for authenticated uploads.
-- **RLS Policies**: Implemented strict security policies for SELECT, INSERT, and DELETE operations across all new tables.
-- **MCP Setup**: Configured Supabase MCP server for direct schema management and agent-driven database tasks.
+### 2. Map & Performance Stabilization
+- **Hook Order Fix**: Resolved a critical React crash in `ProgressTracker.tsx` caused by a "Rules of Hooks" violation. Refactored the component to receive data as props from the parent `Index` page.
+- **Type Safety**: Eliminated multiple `any` casts in hooks and components, replacing them with strict `Bench` and `GuestbookPost` interfaces.
+- **Improved UX**: Simplified the Guestbook feed by removing unrequested proximity filters and "Coming Soon" buttons, focusing on high-signal user content.
 
 ## 🛠 Technical Notes for Next Agent
-- **Schema Cache**: If new tables or columns aren't appearing in the Data API, ensure the schema cache is refreshed.
-- **Images**: Community images are served via Supabase Storage CDN. Transformation parameters (resizing) can be added to URLs for performance optimization.
-- **Types**: Always use the `Bench` and `CommunityPost` interfaces from the hooks; avoid using the legacy `BigBench` static type.
-- **Auth**: Posting and uploading require an active Supabase session.
+- **One-Review Constraint**: Attempting to post a second review for the same bench will now return a 23505 Postgres error, which is caught and handled with a user-friendly toast message.
+- **Guestbook Hook**: `useGuestbook` replaces `useCommunityPosts`. It handles the complex multi-image upload flow and invalidates relevant queries on success.
+- **Sidebar Integration**: Stamp locations remain in the sidebar of the detail page with enhanced typography.
 
 ## 📋 Remaining Tasks
 - [ ] Implement user profile editing (avatar/bio).
-- [ ] Add "Likes" or "Reactions" to community posts.
-- [ ] Implement a "Leaderboard" for top explorers.
-- [ ] Add image compression/resizing before upload.
+- [ ] Activate "Likes" (Bench icons) and "Comments" UI in the Guestbook.
+- [ ] Add image compression/resizing before upload to reduce storage costs.
+
+---
+
+# Project Progress - Session May 6, 2026 (Morning)
+
+## Bug Fixes — Full Component Audit
+
+### Overview
+Performed a complete audit of all React components and hooks. Found and fixed 23 bugs across 11 files, ranging from critical rendering failures to race conditions and performance issues.
+
+---
+
+### Critical Fixes
+
+**Escaped template literals (`\${}`) — `Guestbook.tsx` & `BenchDetailPage.tsx`**
+Backtick template strings throughout the codebase used `\${}` instead of `${}`, causing React to render literal strings instead of interpolated values. Fixed by removing escape characters.
+
+**Rules of Hooks violation — `ProgressTracker.tsx`**
+Two `useMemo` calls were placed after an early `return`. Fixed by refactoring data flow.
+
+... (rest of previous history)

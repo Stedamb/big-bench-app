@@ -79,7 +79,7 @@ const BenchSidePanel = ({ bench, visited, onClose, onToggleVisited }: BenchSideP
           <div className="relative rounded-lg overflow-hidden bg-muted mb-5 aspect-[4/3]">
             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
               <Camera className="w-10 h-10 mb-2 opacity-40" />
-              <p className="text-xs font-editorial italic opacity-60">Foto della comunità</p>
+              <p className="text-xs font-editorial italic opacity-60">Guestbook</p>
             </div>
             {/* Simulated photo border */}
             <div className="absolute inset-2 border border-border/40 rounded pointer-events-none" />

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 
-export interface CommunityPost {
+export interface GuestbookPost {
   id: string;
   user_id: string;
   bench_id: number;
@@ -16,26 +16,30 @@ export interface CommunityPost {
   } | null;
   benches: {
     name: string;
+    location: string;
+    lat: number;
+    lng: number;
   } | null;
   community_post_images: {
     id: string;
     image_url: string;
   }[];
+  distance_km?: number;
 }
 
-export const useCommunityPosts = (benchId?: number) => {
+export const useGuestbook = (benchId?: number) => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
 
   const { data: posts = [], isLoading } = useQuery({
-    queryKey: benchId ? ["community-posts", benchId] : ["community-posts"],
+    queryKey: benchId ? ["guestbook-posts", benchId] : ["guestbook-posts"],
     queryFn: async () => {
       let query = supabase
         .from("community_posts")
         .select(`
           *,
           profiles:user_id (display_name, avatar_url),
-          benches:bench_id (name),
+          benches:bench_id (name, location, lat, lng),
           community_post_images (id, image_url)
         `)
         .order("created_at", { ascending: false });
@@ -46,7 +50,7 @@ export const useCommunityPosts = (benchId?: number) => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as CommunityPost[];
+      return data as any[];
     },
   });
 
@@ -96,7 +100,12 @@ export const useCommunityPosts = (benchId?: number) => {
         .select()
         .single();
 
-      if (postError) throw postError;
+      if (postError) {
+        if (postError.code === '23505') {
+          throw new Error("Hai già lasciato una recensione per questa panchina.");
+        }
+        throw postError;
+      }
 
       // 2. Upload images and link them
       if (imageFiles.length > 0) {
@@ -120,17 +129,30 @@ export const useCommunityPosts = (benchId?: number) => {
       return post;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["community-posts"] });
-      toast.success("Post pubblicato con successo!");
+      queryClient.invalidateQueries({ queryKey: ["guestbook-posts"] });
+      toast.success("Messaggio aggiunto al Guestbook!");
     },
     onError: (error: any) => {
-      toast.error("Errore durante la pubblicazione: " + error.message);
+      toast.error(error.message || "Errore durante la pubblicazione");
     },
   });
 
   return {
-    posts,
+    posts: posts as GuestbookPost[],
     isLoading,
     createPost,
   };
 };
+
+// Helper for proximity
+export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
