@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Header from "@/components/Header";
 import BenchMap from "@/components/BenchMap";
 import ProgressTracker from "@/components/ProgressTracker";
@@ -10,6 +10,9 @@ import { useBenches, type Bench } from "@/hooks/useBenches";
 const Index = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
   const { data: benches = [], isFetching } = useBenches();
+  
+  // Convert to Set for O(1) lookups
+  const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
   const [selectedBench, setSelectedBench] = useState<Bench | null>(null);
 
   // Filters state
@@ -101,7 +104,7 @@ const Index = () => {
       {/* Bench side panel */}
       <BenchSidePanel
         bench={selectedBench}
-        visited={selectedBench ? visitedIds.includes(selectedBench.id) : false}
+        visited={selectedBench ? visitedSet.has(selectedBench.id) : false}
         onClose={() => setSelectedBench(null)}
         onToggleVisited={() => selectedBench && toggleVisited(selectedBench.id)}
       />
