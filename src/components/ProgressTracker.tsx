@@ -1,29 +1,23 @@
-import { useBenches } from "@/hooks/useBenches";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, MapPin, TrendingUp, Loader2 } from "lucide-react";
 import { useMemo } from "react";
+import { type Bench } from "@/hooks/useBenches";
 
 interface ProgressTrackerProps {
   visitedIds: number[];
+  benches: Bench[];
+  isLoading: boolean;
 }
 
-const ProgressTracker = ({ visitedIds }: ProgressTrackerProps) => {
-  const { data: benches = [], isLoading } = useBenches();
-
-  if (isLoading) {
-    return (
-      <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-editorial)] border border-border flex items-center justify-center">
-        <Loader2 className="w-5 h-5 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Convert to Set for O(1) lookups
+const ProgressTracker = ({ visitedIds, benches, isLoading }: ProgressTrackerProps) => {
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
 
   const total = benches.length;
-  const benchIds = new Set(benches.map(b => b.id));
-  const visitedCount = benches.filter(b => visitedSet.has(b.id) && benchIds.has(b.id)).length;
+  const benchIds = useMemo(() => new Set(benches.map(b => b.id)), [benches]);
+  const visitedCount = useMemo(() => 
+    benches.filter(b => visitedSet.has(b.id) && benchIds.has(b.id)).length,
+    [benches, visitedSet, benchIds]
+  );
   const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
 
   const regionsVisited = useMemo(() => 
@@ -32,6 +26,14 @@ const ProgressTracker = ({ visitedIds }: ProgressTrackerProps) => {
     ).size,
     [benches, visitedSet]
   );
+
+  if (isLoading) {
+    return (
+      <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-editorial)] border border-border flex items-center justify-center">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-editorial)] border border-border">

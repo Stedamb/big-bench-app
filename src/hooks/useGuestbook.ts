@@ -50,13 +50,13 @@ export const useGuestbook = (benchId?: number) => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as any[];
+      return (data ?? []) as GuestbookPost[];
     },
   });
 
   const uploadImage = async (file: File) => {
     const fileExt = file.name.split(".").pop();
-    const fileName = `${Math.random()}.${fileExt}`;
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath = `community/${fileName}`;
 
     const { error: uploadError } = await supabase.storage
@@ -132,13 +132,13 @@ export const useGuestbook = (benchId?: number) => {
       queryClient.invalidateQueries({ queryKey: ["guestbook-posts"] });
       toast.success("Messaggio aggiunto al Guestbook!");
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || "Errore durante la pubblicazione");
     },
   });
 
   return {
-    posts: posts as GuestbookPost[],
+    posts,
     isLoading,
     createPost,
   };

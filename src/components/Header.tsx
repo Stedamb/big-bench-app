@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,8 +20,12 @@ const Header = () => {
   const isHome = location.pathname === "/";
 
   const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
+    try {
+      await signOut();
+      navigate("/");
+    } catch {
+      toast.error("Errore durante la disconnessione. Riprova.");
+    }
   };
 
   const initials = (user?.user_metadata?.display_name || user?.email || "?")

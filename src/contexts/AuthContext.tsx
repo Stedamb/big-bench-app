@@ -17,17 +17,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up listener FIRST
+    // onAuthStateChange fires INITIAL_SESSION synchronously on mount in Supabase v2,
+    // which sets loading=false. A separate getSession() call is redundant and causes
+    // a double state-set race condition.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession);
       setUser(newSession?.user ?? null);
-      setLoading(false);
-    });
-
-    // THEN check existing session
-    supabase.auth.getSession().then(({ data: { session: existingSession } }) => {
-      setSession(existingSession);
-      setUser(existingSession?.user ?? null);
       setLoading(false);
     });
 

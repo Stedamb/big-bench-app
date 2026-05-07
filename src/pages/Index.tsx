@@ -90,13 +90,13 @@ const Index = () => {
 
         {/* Progress overlay */}
         <div className="absolute top-4 left-4 z-[1000] w-72 hidden lg:block">
-          <ProgressTracker visitedIds={visitedIds} />
+          <ProgressTracker visitedIds={visitedIds} benches={benches} isLoading={isFetching} />
         </div>
 
         {/* Mobile progress - bottom sheet style */}
         {!selectedBench && (
           <div className="absolute bottom-4 left-4 right-4 z-[1000] lg:hidden">
-            <ProgressTracker visitedIds={visitedIds} />
+            <ProgressTracker visitedIds={visitedIds} benches={benches} isLoading={isFetching} />
           </div>
         )}
       </main>

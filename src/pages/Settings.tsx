@@ -42,7 +42,13 @@ const Settings = () => {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      // Without a user there is nothing to load; clear the spinner so the
+      // redirect effect (above) can handle the unauthenticated state without
+      // leaving the page stuck on the loading indicator.
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     (async () => {
       const { data } = await supabase

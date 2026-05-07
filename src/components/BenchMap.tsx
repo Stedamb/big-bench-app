@@ -8,18 +8,22 @@ import BenchPopup from "./BenchPopup";
 // Fix default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
-const createBenchIcon = (colors: string[] = []) => {
+const createBenchIcon = (colors: string[] = [], benchId: number) => {
   const primaryColor = colors[0] || "#C4572A";
   const secondaryColor = colors[1] || primaryColor;
+  // Include benchId in gradient IDs to prevent collisions when multiple SVGs
+  // with the same colors exist in the DOM simultaneously (browser resolves
+  // gradient by ID and can pick the wrong element in Firefox/Safari).
+  const gradId = `grad-${benchId}-${primaryColor.replace('#', '')}-${secondaryColor.replace('#', '')}`;
   
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="28" height="42">
     <defs>
-      <linearGradient id="grad-${primaryColor.replace('#', '')}-${secondaryColor.replace('#', '')}" x1="0%" y1="0%" x2="100%" y2="0%">
+      <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">
         <stop offset="50%" style="stop-color:${primaryColor};stop-opacity:1" />
         <stop offset="50%" style="stop-color:${secondaryColor};stop-opacity:1" />
       </linearGradient>
     </defs>
-    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="url(#grad-${primaryColor.replace('#', '')}-${secondaryColor.replace('#', '')})" stroke="#1a1a1a" stroke-width="1"/>
+    <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 24 12 24s12-15 12-24C24 5.4 18.6 0 12 0z" fill="url(#${gradId})" stroke="#1a1a1a" stroke-width="1"/>
     <circle cx="12" cy="11" r="5" fill="white" fill-opacity="0.9"/>
     <rect x="8" y="9.5" width="8" height="1.5" rx="0.5" fill="${primaryColor}"/>
     <rect x="9" y="11.5" width="1.5" height="3" rx="0.3" fill="${primaryColor}"/>
@@ -81,11 +85,11 @@ const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBen
             <Marker
               key={bench.id}
               position={[bench.lat, bench.lng]}
-              icon={createBenchIcon(bench.colors)}
+              icon={createBenchIcon(bench.colors, bench.id)}
             >
               <Popup maxWidth={320} minWidth={280}>
-                <BenchPopup
-                  bench={bench as any}
+                 <BenchPopup
+                  bench={bench}
                   visited={visited}
                   onToggleVisited={() => onToggleVisited(bench.id)}
                   onViewDetail={() => onSelectBench(bench)}

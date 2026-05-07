@@ -83,7 +83,9 @@ const BenchDetailPage = () => {
   const { user } = useAuth();
   const { data: bench, isLoading, error } = useBench(id);
   const { visitedIds, toggleVisited } = useVisitedBenches();
-  const { posts, isLoading: isLoadingPosts, createPost } = useGuestbook(id ? parseInt(id) : undefined);
+  // Guard against non-numeric route params before passing to the query
+  const numericId = id && /^\d+$/.test(id) ? parseInt(id, 10) : undefined;
+  const { posts, isLoading: isLoadingPosts, createPost } = useGuestbook(numericId);
 
   const stampLocations = bench?.stamp_locations || [];
 
@@ -109,7 +111,7 @@ const BenchDetailPage = () => {
   }, [primaryColor, secondaryColor, bench]);
 
   const communityPhotos = useMemo(() => 
-    posts.flatMap(p => p.community_post_images.map(img => ({
+    posts.flatMap(p => (p.community_post_images ?? []).map(img => ({
       ...img,
       displayName: p.profiles?.display_name || "Anonimo"
     }))), 
@@ -129,13 +131,15 @@ const BenchDetailPage = () => {
       return;
     }
 
+    if (!bench) return;
+
     if (!newContent && selectedFiles.length === 0 && !newRating) {
       toast.error("Inserisci un testo, un'immagine o una valutazione.");
       return;
     }
 
     await createPost.mutateAsync({
-      benchId: bench!.id,
+      benchId: bench.id,
       content: newContent,
       rating: newRating,
       imageFiles: selectedFiles,
@@ -199,7 +203,7 @@ const BenchDetailPage = () => {
                   Bench No. {bench.number}
                 </span>
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {bench.region} {bench.province ? `· \${bench.province}` : ""}
+                  {bench.region} {bench.province ? `· ${bench.province}` : ""}
                 </span>
               </div>
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight mb-3">
@@ -207,7 +211,7 @@ const BenchDetailPage = () => {
               </h1>
               <p className="font-editorial italic text-lg text-muted-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                {bench.location}, {bench.region} {bench.altitude_m ? `· \${bench.altitude_m}m s.l.m.` : ""}
+                {bench.location}, {bench.region} {bench.altitude_m ? `· ${bench.altitude_m}m s.l.m.` : ""}
               </p>
             </div>
 
@@ -337,7 +341,7 @@ const BenchDetailPage = () => {
                   >
                     <img 
                       src={p.image_url!} 
-                      alt={`Bench detail \${i}`} 
+                      alt={`Bench detail ${i}`} 
                       className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
