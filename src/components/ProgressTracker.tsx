@@ -29,44 +29,48 @@ const ProgressTracker = ({ visitedIds, benches, isLoading }: ProgressTrackerProp
 
   if (isLoading) {
     return (
-      <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-editorial)] border border-border flex items-center justify-center">
-        <Loader2 className="w-5 h-5 animate-spin text-primary" />
+      <div className="bg-white rounded-none p-4 shadow-neo border-4 border-black flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-black" />
       </div>
     );
   }
 
   return (
-    <div className="bg-card rounded-lg p-4 shadow-[var(--shadow-editorial)] border border-border">
+    <div className="bg-white rounded-none p-4 sm:p-6 shadow-neo border-2 sm:border-4 border-black">
       {/* Header */}
-      <div className="flex items-center gap-2 mb-3">
-        <Trophy className="w-4 h-4 text-primary" />
-        <h3 className="font-display text-sm font-bold">Il Tuo Progresso</h3>
+      <div className="flex items-center gap-2 mb-3 sm:mb-4 border-b-2 border-black pb-1.5 sm:pb-2">
+        <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+        <h3 className="font-display text-lg sm:text-xl font-black uppercase">Il Tuo Progresso</h3>
       </div>
 
       {/* Progress bar */}
-      <div className="space-y-1.5">
-        <div className="flex justify-between text-xs">
-          <span className="text-muted-foreground font-editorial">Panchine visitate</span>
-          <span className="font-bold">{visitedCount}/{total}</span>
+      <div className="space-y-1 sm:space-y-2">
+        <div className="flex justify-between text-xs sm:text-sm font-black uppercase tracking-wider">
+          <span className="text-black/60">Visitato</span>
+          <span className="font-black">{visitedCount}/{total}</span>
         </div>
-        <Progress value={percentage} className="h-2" />
-        <p className="text-xs text-muted-foreground text-right">{percentage}%</p>
+        <Progress value={percentage} className="h-4 sm:h-6" />
+        <p className="text-xs sm:text-sm font-black text-right mt-0.5 sm:mt-1">{percentage}%</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-border">
-        <div className="flex items-center gap-2">
-          <MapPin className="w-3.5 h-3.5 text-accent" />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t-2 border-black">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-black flex items-center justify-center bg-accent/20">
+            <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+          </div>
           <div>
-            <p className="text-lg font-display font-bold leading-none">{regionsVisited}</p>
-            <p className="text-[10px] text-muted-foreground">Regioni</p>
+            <p className="text-xl sm:text-2xl font-black leading-none">{regionsVisited}</p>
+            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-black/60">Regioni</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <TrendingUp className="w-3.5 h-3.5 text-primary" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 border-2 border-black flex items-center justify-center bg-primary/20">
+            <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-black" />
+          </div>
           <div>
-            <p className="text-lg font-display font-bold leading-none">{percentage}%</p>
-            <p className="text-[10px] text-muted-foreground">Completato</p>
+            <p className="text-xl sm:text-2xl font-black leading-none">{percentage}%</p>
+            <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-widest text-black/60">Status</p>
           </div>
         </div>
       </div>

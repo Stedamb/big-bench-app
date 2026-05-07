@@ -15,82 +15,66 @@
 :root {
   /* ---- Surface Colors ---- */
   --background:          36 60% 96%;   /* Warm cream — page background */
-  --foreground:          0 0% 10%;     /* Near-black — primary text */
-  --card:                36 50% 98%;   /* Lighter cream — card surfaces */
-  --card-foreground:     0 0% 10%;     /* Near-black — card text */
-  --popover:             36 50% 98%;   /* Same as card — popover bg */
-  --popover-foreground:  0 0% 10%;     /* Near-black — popover text */
+  --foreground:          0 0% 0%;      /* Pure black for neobrutalism */
+  --card:                0 0% 100%;    /* Pure white */
+  --card-foreground:     0 0% 0%;
+  --popover:             0 0% 100%;
+  --popover-foreground:  0 0% 0%;
 
   /* ---- Brand Colors ---- */
-  --primary:             14 66% 47%;   /* Terracotta — main brand */
-  --primary-foreground:  36 60% 96%;   /* Cream — text on primary */
-  --accent:              130 20% 40%;  /* Olive green — secondary brand */
-  --accent-foreground:   36 60% 96%;   /* Cream — text on accent */
+  --primary:             14 80% 55%;   /* More vibrant terracotta */
+  --primary-foreground:  0 0% 100%;
+  --accent:              130 40% 45%;  /* More vibrant olive */
+  --accent-foreground:   0 0% 100%;
 
   /* ---- Neutral Scale ---- */
-  --secondary:           36 30% 90%;   /* Light warm gray */
-  --secondary-foreground: 0 0% 15%;   /* Dark gray */
-  --muted:               36 20% 92%;   /* Soft warm gray */
-  --muted-foreground:    0 0% 40%;     /* Medium gray — muted text */
+  --secondary:           0 0% 90%;
+  --secondary-foreground: 0 0% 0%;
+  --muted:               0 0% 96%;
+  --muted-foreground:    0 0% 20%;
 
   /* ---- Feedback Colors ---- */
-  --destructive:         0 84.2% 60.2%;  /* Red — errors/destructive */
-  --destructive-foreground: 210 40% 98%; /* Near-white — text on red */
+  --destructive:         0 100% 50%;
+  --destructive-foreground: 0 0% 100%;
 
   /* ---- Border & Ring ---- */
-  --border:              36 20% 85%;   /* Warm gray border */
-  --input:               36 20% 85%;   /* Same as border — input fields */
-  --ring:                14 66% 47%;   /* Same as primary — focus rings */
-  --radius:              0.375rem;     /* 6px — default border radius */
+  --border:              0 0% 0%;      /* Black borders for neobrutalism */
+  --input:               0 0% 0%;
+  --ring:                0 0% 0%;
+  --radius:              0px;          /* Sharp corners for neobrutalism */
 
   /* ---- Sidebar Colors ---- */
-  --sidebar-background:         36 30% 94%;
-  --sidebar-foreground:         0 0% 15%;
-  --sidebar-primary:            14 66% 47%;
-  --sidebar-primary-foreground: 36 60% 96%;
-  --sidebar-accent:             36 20% 90%;
-  --sidebar-accent-foreground:  0 0% 15%;
-  --sidebar-border:             36 20% 85%;
-  --sidebar-ring:               14 66% 47%;
+  --sidebar-background:         0 0% 98%;
+  --sidebar-foreground:         0 0% 0%;
+  --sidebar-primary:            14 80% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent:             0 0% 90%;
+  --sidebar-accent-foreground:  0 0% 0%;
+  --sidebar-border:             0 0% 0%;
+  --sidebar-ring:               0 0% 0%;
 }
 
 .dark {
-  /* ---- Surface Colors ---- */
-  --background:          0 0% 8%;      /* Near-black */
-  --foreground:          36 30% 90%;   /* Warm light gray */
-  --card:                0 0% 11%;     /* Dark gray */
-  --card-foreground:     36 30% 90%;   /* Warm light gray */
-  --popover:             0 0% 11%;     /* Same as card */
-  --popover-foreground:  36 30% 90%;   /* Warm light gray */
+  /* Dark mode neobrutalism still uses high contrast */
+  --background:          0 0% 5%;
+  --foreground:          0 0% 100%;
+  --card:                0 0% 10%;
+  --card-foreground:     0 0% 100%;
+  --popover:             0 0% 10%;
+  --popover-foreground:  0 0% 100%;
 
-  /* ---- Brand Colors ---- */
-  --primary:             14 66% 52%;   /* Brighter terracotta for dark bg */
-  --primary-foreground:  0 0% 8%;      /* Near-black */
-  --accent:              130 20% 45%;  /* Brighter olive for dark bg */
-  --accent-foreground:   0 0% 8%;      /* Near-black */
+  --primary:             14 80% 60%;
+  --primary-foreground:  0 0% 0%;
+  --accent:              130 40% 50%;
+  --accent-foreground:   0 0% 0%;
 
-  /* ---- Neutral Scale ---- */
-  --secondary:           0 0% 15%;
-  --secondary-foreground: 36 30% 90%;
+  --secondary:           0 0% 20%;
+  --secondary-foreground: 0 0% 100%;
   --muted:               0 0% 15%;
-  --muted-foreground:    36 15% 60%;   /* Muted warm gray */
+  --muted-foreground:    0 0% 80%;
 
-  /* ---- Feedback Colors ---- */
-  --destructive:         0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-
-  /* ---- Border & Ring ---- */
-  --border:              0 0% 20%;
-  --input:               0 0% 20%;
-  --ring:                14 66% 52%;
-
-  /* ---- Sidebar Colors ---- */
-  --sidebar-background:         0 0% 10%;
-  --sidebar-foreground:         36 30% 90%;
-  --sidebar-primary:            14 66% 52%;
-  --sidebar-primary-foreground: 0 0% 8%;
-  --sidebar-accent:             0 0% 15%;
-  --sidebar-accent-foreground:  36 30% 90%;
-  --sidebar-border:             0 0% 20%;
-  --sidebar-ring:               14 66% 52%;
+  --border:              0 0% 100%;
+  --input:               0 0% 100%;
+  --ring:                0 0% 100%;
 }
+
