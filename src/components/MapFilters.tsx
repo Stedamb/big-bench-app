@@ -59,6 +59,7 @@ const MapFilters = ({
           placeholder="CERCA..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
+          aria-label="Search locations"
           className="pl-8 sm:pl-10 pr-6 sm:pr-8 h-8 sm:h-10 border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/40 font-black uppercase tracking-tight sm:tracking-wider text-xs sm:text-base"
         />
         {hasSearch && (
@@ -76,15 +77,17 @@ const MapFilters = ({
       <div className="flex items-center gap-1 sm:gap-2 px-1 border-l-2 sm:border-l-4 border-black">
         <Popover>
           <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="h-8 sm:h-10 rounded-none gap-1 sm:gap-2 border-2 border-black bg-white shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none px-2 sm:px-4"
+              aria-label={activeFiltersCount > 0 ? `Filtri (${activeFiltersCount} attivi)` : "Filtri"}
             >
               <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline uppercase font-black tracking-tight">Filtri</span>
+              <span className="sr-only sm:hidden">Filtri</span>
               {activeFiltersCount > 0 && (
-                <Badge variant="default" className="h-4 w-4 sm:h-6 sm:w-6 p-0 flex items-center justify-center rounded-none shadow-none border-2 border-black text-[8px] sm:text-xs font-black">
+                <Badge variant="default" className="h-4 w-4 sm:h-6 sm:w-6 p-0 flex items-center justify-center rounded-none shadow-none border-2 border-black text-[8px] sm:text-xs font-black" aria-hidden="true">
                   {activeFiltersCount}
                 </Badge>
               )}

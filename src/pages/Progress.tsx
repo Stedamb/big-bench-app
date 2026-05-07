@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useMemo } from "react";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches } from "@/hooks/useBenches";
+import VisitedButton from "@/components/VisitedButton";
 
 const getExplorerGrade = (percentage: number) => {
   if (percentage >= 80) return "Master Explorer";
@@ -247,17 +248,19 @@ const ProgressPage = () => {
                               {bench.location}{bench.region ? `, ${bench.region}` : ""}
                             </p>
                           </div>
-                          {/* Neobrutalist action buttons — kept as-is */}
-                          <button
-                            onClick={() => toggleVisited(bench.id)}
-                            title="Segna come visitata"
-                            className="shrink-0 w-8 h-8 border-2 border-black bg-white flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                          </button>
+                          {/* Neobrutalist action buttons */}
+                          <div className="shrink-0">
+                            <VisitedButton
+                              visited={visitedSet.has(bench.id)}
+                              onToggleVisited={() => toggleVisited(bench.id)}
+                              benchId={bench.id}
+                              className="h-8 px-2 text-[10px] font-black"
+                            />
+                          </div>
                           <Link
                             to={`/bench/${bench.id}`}
                             className="shrink-0 w-8 h-8 border-2 border-black bg-white flex items-center justify-center hover:bg-secondary transition-colors"
+                            aria-label={`Apri i dettagli di ${bench.name}`}
                           >
                             <ExternalLink className="w-3.5 h-3.5" />
                           </Link>
