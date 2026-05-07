@@ -1,22 +1,30 @@
-import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import MarkerClusterGroup from "react-leaflet-cluster";
+import "react-leaflet-cluster/lib/assets/MarkerCluster.css";
+import "react-leaflet-cluster/lib/assets/MarkerCluster.Default.css";
 import { useTheme } from "next-themes";
-import { useBenches, type Bench } from "@/hooks/useBenches";
+import { type Bench } from "@/hooks/useBenches";
 import BenchPopup from "./BenchPopup";
 
 // Fix default marker icon
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 
+// Module-level cache: avoids recreating 461 SVG strings on every render
+const iconCache = new Map<number, L.DivIcon>();
+
 const createBenchIcon = (colors: string[] = [], benchId: number) => {
+  if (iconCache.has(benchId)) return iconCache.get(benchId)!;
+
   const primaryColor = colors[0] || "#C4572A";
   const secondaryColor = colors[1] || primaryColor;
   // Include benchId in gradient IDs to prevent collisions when multiple SVGs
   // with the same colors exist in the DOM simultaneously (browser resolves
   // gradient by ID and can pick the wrong element in Firefox/Safari).
   const gradId = `grad-${benchId}-${primaryColor.replace('#', '')}-${secondaryColor.replace('#', '')}`;
-  
+
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 36" width="28" height="42">
     <defs>
       <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -31,14 +39,31 @@ const createBenchIcon = (colors: string[] = [], benchId: number) => {
     <rect x="13.5" y="11.5" width="1.5" height="3" rx="0.3" fill="${secondaryColor}"/>
   </svg>`;
 
-  return L.divIcon({
+  const icon = L.divIcon({
     html: svg,
     className: "bench-marker",
     iconSize: [28, 42],
     iconAnchor: [14, 42],
     popupAnchor: [0, -42],
   });
+
+  iconCache.set(benchId, icon);
+  return icon;
 };
+
+// "You are here" pulsing dot
+const locationIcon = L.divIcon({
+  html: `<div style="
+    width:16px;height:16px;
+    background:#3b82f6;
+    border:3px solid white;
+    border-radius:50%;
+    box-shadow:0 0 0 3px rgba(59,130,246,0.4),0 2px 8px rgba(0,0,0,0.3);
+  "></div>`,
+  className: "",
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
 
 function ThemeAwareTileLayer() {
   const { resolvedTheme } = useTheme();
@@ -65,6 +90,95 @@ function FitBounds({ benches }: { benches: Bench[] }) {
   return null;
 }
 
+/** Requests geolocation, shows a "you are here" marker, and flies to the user's position. */
+function UserLocation() {
+  const map = useMap();
+  const [position, setPosition] = useState<L.LatLng | null>(null);
+  const hasFlownRef = useRef(false);
+
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+        setPosition(latlng);
+        if (!hasFlownRef.current) {
+          hasFlownRef.current = true;
+          map.flyTo(latlng, 13, { duration: 1.5 });
+        }
+      },
+      () => {
+        // Silently ignore denied / unavailable geolocation
+      },
+      { enableHighAccuracy: false, timeout: 10000 },
+    );
+  }, [map]);
+
+  if (!position) return null;
+
+  return (
+    <Marker position={position} icon={locationIcon}>
+      <Popup>La tua posizione</Popup>
+    </Marker>
+  );
+}
+
+interface BenchMarkersProps {
+  benches: Bench[];
+  visitedIds: number[];
+  onToggleVisited: (id: number) => void;
+  onSelectBench: (bench: Bench) => void;
+}
+
+/**
+ * Renders only markers whose coordinates fall within the current map viewport
+ * (padded by 50% to avoid pop-in at edges), wrapped in a cluster group so that
+ * nearby markers merge into a single cluster circle on mobile zoom levels.
+ */
+function ViewportFilteredMarkers({ benches, visitedIds, onToggleVisited, onSelectBench }: BenchMarkersProps) {
+  const map = useMap();
+
+  const [paddedBounds, setPaddedBounds] = useState<L.LatLngBounds>(() =>
+    map.getBounds().pad(0.5),
+  );
+
+  useMapEvents({
+    moveend() { setPaddedBounds(map.getBounds().pad(0.5)); },
+    zoomend() { setPaddedBounds(map.getBounds().pad(0.5)); },
+  });
+
+  // O(1) visited lookup
+  const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
+
+  // Only pass benches that are within the extended viewport to the cluster group
+  const visibleBenches = useMemo(
+    () => benches.filter(b => paddedBounds.contains([b.lat, b.lng])),
+    [benches, paddedBounds],
+  );
+
+  return (
+    <MarkerClusterGroup chunkedLoading disableClusteringAtZoom={16}>
+      {visibleBenches.map((bench) => (
+        <Marker
+          key={bench.id}
+          position={[bench.lat, bench.lng]}
+          icon={createBenchIcon(bench.colors, bench.id)}
+        >
+          <Popup maxWidth={320} minWidth={280}>
+            <BenchPopup
+              bench={bench}
+              visited={visitedSet.has(bench.id)}
+              onToggleVisited={() => onToggleVisited(bench.id)}
+              onViewDetail={() => onSelectBench(bench)}
+            />
+          </Popup>
+        </Marker>
+      ))}
+    </MarkerClusterGroup>
+  );
+}
+
 interface BenchMapProps {
   benches: Bench[];
   isLoading: boolean;
@@ -82,7 +196,7 @@ const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBen
           <span className="text-xs font-medium text-muted-foreground">Aggiornamento...</span>
         </div>
       )}
-      
+
       <MapContainer
         center={[44.9, 9.5]}
         zoom={7}
@@ -91,25 +205,13 @@ const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBen
       >
         <ThemeAwareTileLayer />
         <FitBounds benches={benches} />
-        {benches.map((bench) => {
-          const visited = visitedIds.includes(bench.id);
-          return (
-            <Marker
-              key={bench.id}
-              position={[bench.lat, bench.lng]}
-              icon={createBenchIcon(bench.colors, bench.id)}
-            >
-              <Popup maxWidth={320} minWidth={280}>
-                 <BenchPopup
-                  bench={bench}
-                  visited={visited}
-                  onToggleVisited={() => onToggleVisited(bench.id)}
-                  onViewDetail={() => onSelectBench(bench)}
-                />
-              </Popup>
-            </Marker>
-          );
-        })}
+        <UserLocation />
+        <ViewportFilteredMarkers
+          benches={benches}
+          visitedIds={visitedIds}
+          onToggleVisited={onToggleVisited}
+          onSelectBench={onSelectBench}
+        />
       </MapContainer>
     </div>
   );

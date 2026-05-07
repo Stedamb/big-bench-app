@@ -343,6 +343,7 @@ const BenchDetailPage = () => {
                     <img 
                       src={p.image_url!} 
                       alt={`Bench detail ${i}`} 
+                      loading="lazy"
                       className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
@@ -402,7 +403,7 @@ const BenchDetailPage = () => {
                         className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0 overflow-hidden bg-muted"
                       >
                         {r.profiles?.avatar_url ? (
-                          <img src={r.profiles.avatar_url} className="w-full h-full object-cover" />
+                          <img src={r.profiles.avatar_url} loading="lazy" className="w-full h-full object-cover" />
                         ) : (
                           <span style={{ color: primaryColor === "#E5E7EB" ? "#000" : "#fff" }}>
                             {r.profiles?.display_name?.slice(0, 2).toUpperCase() || "BB"}
