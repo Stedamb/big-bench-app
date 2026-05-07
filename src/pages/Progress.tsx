@@ -2,8 +2,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Check, Lock, ArrowLeft, Loader2, MapPin, ExternalLink } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
+import { motion } from "motion/react";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches } from "@/hooks/useBenches";
 
@@ -152,7 +154,6 @@ const ProgressPage = () => {
 
                 {visitedCount === 0 ? (
                   <div className="py-10 text-center">
-                    {/* Show a few locked previews */}
                     <div className="flex justify-center gap-4 mb-6 opacity-30">
                       {shuffledUnvisited.slice(0, 3).map((bench) => (
                         <div key={bench.id} className="text-center">
@@ -172,31 +173,33 @@ const ProgressPage = () => {
                     {visitedBenches.map((bench, i) => {
                       const bColor = bench.colors?.[0] || "#C4572A";
                       return (
-                        <Link
+                        <motion.div
                           key={bench.id}
-                          to={`/bench/${bench.id}`}
-                          className="text-center group animate-fade-in"
-                          style={{ animationDelay: `${i * 40}ms`, animationFillMode: "backwards" }}
+                          initial={{ opacity: 0, scale: 0.85 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.35, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] }}
                         >
-                          <div
-                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md"
-                            style={{ backgroundColor: `${bColor}20`, borderColor: bColor }}
-                          >
-                            <Check className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:scale-110" style={{ color: bColor }} />
-                          </div>
-                          <p className="text-xs font-editorial italic leading-tight text-foreground line-clamp-2">
-                            {bench.name}
-                          </p>
-                          <p className="text-[9px] text-muted-foreground mt-0.5 truncate">
-                            {bench.location}
-                          </p>
-                        </Link>
+                          <Link to={`/bench/${bench.id}`} className="text-center group block">
+                            <div
+                              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md"
+                              style={{ backgroundColor: `${bColor}20`, borderColor: bColor }}
+                            >
+                              <Check className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:scale-110" style={{ color: bColor }} />
+                            </div>
+                            <p className="text-xs font-editorial italic leading-tight text-foreground line-clamp-2">
+                              {bench.name}
+                            </p>
+                            <p className="text-[9px] text-muted-foreground mt-0.5 truncate">
+                              {bench.location}
+                            </p>
+                          </Link>
+                        </motion.div>
                       );
                     })}
 
                     {/* 2 random unvisited — dimmed locked stamps */}
                     {previewUnvisited.map((bench) => (
-                      <div key={bench.id} className="text-center opacity-30 select-none">
+                      <div key={bench.id} className="text-center opacity-25 select-none">
                         <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-2 border-dashed border-border">
                           <Lock className="w-4 h-4 text-muted-foreground" />
                         </div>
@@ -225,19 +228,20 @@ const ProgressPage = () => {
                   </p>
                 ) : (
                   <div className="divide-y divide-border/40">
-                    {todoList.map((bench) => {
+                    {todoList.map((bench, i) => {
                       const bColor = bench.colors?.[0] || "#C4572A";
                       return (
-                        <div
+                        <motion.div
                           key={bench.id}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: i * 0.05, ease: [0.16, 1, 0.3, 1] }}
                           className="flex items-center gap-3 py-3.5 px-1 hover:bg-muted/30 -mx-1 transition-colors"
                         >
-                          {/* Color dot */}
                           <div
                             className="w-2.5 h-2.5 rounded-full shrink-0"
                             style={{ backgroundColor: bColor }}
                           />
-                          {/* Info */}
                           <div className="flex-1 min-w-0">
                             <p className="font-display text-sm font-bold leading-tight truncate">
                               {bench.name}
@@ -247,21 +251,26 @@ const ProgressPage = () => {
                               {bench.location}{bench.region ? `, ${bench.region}` : ""}
                             </p>
                           </div>
-                          {/* Neobrutalist action buttons — kept as-is */}
-                          <button
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="shrink-0 h-8 w-8"
                             onClick={() => toggleVisited(bench.id)}
                             title="Segna come visitata"
-                            className="shrink-0 w-8 h-8 border-2 border-black bg-white flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
                           >
                             <Check className="w-3.5 h-3.5" />
-                          </button>
-                          <Link
-                            to={`/bench/${bench.id}`}
-                            className="shrink-0 w-8 h-8 border-2 border-black bg-white flex items-center justify-center hover:bg-secondary transition-colors"
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="shrink-0 h-8 w-8"
+                            asChild
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </Link>
-                        </div>
+                            <Link to={`/bench/${bench.id}`}>
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Link>
+                          </Button>
+                        </motion.div>
                       );
                     })}
                   </div>
