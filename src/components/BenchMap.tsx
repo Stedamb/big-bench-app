@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { useTheme } from "next-themes";
 import { useBenches, type Bench } from "@/hooks/useBenches";
 import BenchPopup from "./BenchPopup";
 
@@ -39,6 +40,19 @@ const createBenchIcon = (colors: string[] = [], benchId: number) => {
   });
 };
 
+function ThemeAwareTileLayer() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+
+  return (
+    <TileLayer
+      key={isDark ? "dark" : "light"}
+      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      url={isDark ? "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png" : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"}
+    />
+  );
+}
+
 function FitBounds({ benches }: { benches: Bench[] }) {
   const map = useMap();
   useEffect(() => {
@@ -74,10 +88,7 @@ const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBen
         className="w-full h-full"
         zoomControl={true}
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-        />
+        <ThemeAwareTileLayer />
         <FitBounds benches={benches} />
         {benches.map((bench) => {
           const visited = visitedIds.includes(bench.id);

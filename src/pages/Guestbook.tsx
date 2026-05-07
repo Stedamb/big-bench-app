@@ -96,12 +96,12 @@ const Guestbook = () => {
   const { posts, isLoading } = useGuestbook();
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/50">
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
       
       <main className="flex-1">
         {/* Hero */}
-        <div className="bg-white border-b border-border/60">
+        <div className="bg-card border-b border-border/60">
           <div className="container py-8 sm:py-10">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
@@ -137,7 +137,7 @@ const Guestbook = () => {
               <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Sintonizzazione...</p>
             </div>
           ) : posts.length === 0 ? (
-            <div className="text-center py-24 border-2 border-dashed border-border/60 rounded-xl bg-white/50">
+            <div className="text-center py-24 border-2 border-dashed border-border/60 rounded-xl bg-card/50">
               <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground/20 mb-4" />
               <h3 className="font-display text-xl font-bold mb-2">Nessun messaggio trovato</h3>
               <p className="font-editorial italic text-muted-foreground mb-8">
