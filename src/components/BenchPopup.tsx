@@ -19,7 +19,7 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
       >
         #{bench.number}
       </div>
-      <div className="flex items-start gap-3 mb-3">
+      <div className="flex items-start gap-3 mb-1">
         <div className="overflow-hidden">
           <h3 className="font-display text-lg font-black uppercase leading-none truncate">
             {bench.name}
@@ -31,7 +31,7 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
         </div>
       </div>
       {/* Actions */}
-      <div className="flex items-center gap-2 mt- pt-4 border-t-2 border-black">
+      <div className="flex items-center gap-2 pt-4 border-t-2 border-black">
         <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="text-[10px] h-9 px-3" />
         <Button
           size="sm"
