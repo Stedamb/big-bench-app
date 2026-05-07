@@ -60,6 +60,7 @@ const PostCard = ({ post }: { post: GuestbookPost }) => {
               <img 
                 src={img.image_url} 
                 alt="Guestbook photo" 
+                loading="lazy"
                 className="object-cover w-full h-full"
               />
             </div>
