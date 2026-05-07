@@ -1,23 +1,12 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Check, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, Lock, ArrowLeft, Loader2, MapPin, ExternalLink } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
-import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches } from "@/hooks/useBenches";
-
-const quotes = [
-  {
-    text: "Distance is not just a measure of space, but of the clarity one finds in the silence of the high plains.",
-    source: "From the Editor's Note, Vol. III"
-  },
-  {
-    text: "Every bench is a window to a world we forgot to notice.",
-    source: "Big Bench Community"
-  },
-];
+import VisitedButton from "@/components/VisitedButton";
 
 const getExplorerGrade = (percentage: number) => {
   if (percentage >= 80) return "Master Explorer";
@@ -27,49 +16,63 @@ const getExplorerGrade = (percentage: number) => {
   return "Newcomer";
 };
 
+function deterministicShuffle<T extends { id: number }>(arr: T[]): T[] {
+  const copy = [...arr];
+  let seed = copy.reduce((s, b) => s + b.id, 0) || 1;
+  for (let i = copy.length - 1; i > 0; i--) {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    const j = seed % (i + 1);
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 const ProgressPage = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
   const { data: benches = [], isLoading } = useBenches();
 
-  const total = benches.length;
-  const benchIds = new Set(benches.map(b => b.id));
-  const visitedCount = visitedIds.filter(id => benchIds.has(id)).length;
-  const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
-
-  // Use a Set for O(1) lookups instead of O(n) Array.includes() inside filter loops
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
 
-  const regionsVisited = useMemo(() =>
-    new Set(benches.filter(b => visitedSet.has(b.id)).map(b => b.region)).size,
+  const visitedBenches = useMemo(
+    () => benches.filter(b => visitedSet.has(b.id)),
     [benches, visitedSet]
   );
-  const totalRegions = useMemo(() =>
-    new Set(benches.map(b => b.region)).size,
+  const unvisitedBenches = useMemo(
+    () => benches.filter(b => !visitedSet.has(b.id)),
+    [benches, visitedSet]
+  );
+
+  const total = benches.length;
+  const visitedCount = visitedBenches.length;
+  const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
+
+  const regionsVisited = useMemo(
+    () => new Set(visitedBenches.map(b => b.region)).size,
+    [visitedBenches]
+  );
+  const totalRegions = useMemo(
+    () => new Set(benches.map(b => b.region)).size,
+    [benches]
+  );
+  const countriesVisited = useMemo(
+    () => new Set(visitedBenches.map(b => b.country)).size,
+    [visitedBenches]
+  );
+  const allCountries = useMemo(
+    () => Array.from(new Set(benches.map(b => b.country))).sort(),
     [benches]
   );
 
-  // Total altitude of visited benches
-  const totalAltitude = useMemo(() =>
-    benches.filter(b => visitedSet.has(b.id)).reduce((sum, b) => sum + (b.altitude_m || 0), 0),
-    [benches, visitedSet]
+  const shuffledUnvisited = useMemo(
+    () => deterministicShuffle(unvisitedBenches),
+    [unvisitedBenches]
   );
+  // First 2 shown as locked stamps after the visited collection
+  const previewUnvisited = shuffledUnvisited.slice(0, 2);
+  // Next 8 for the todo list
+  const todoList = shuffledUnvisited.slice(2, 10);
 
-  // Recent visits (last 3 visited)
-  const recentVisits = useMemo(() =>
-    benches.filter(b => visitedSet.has(b.id)).slice(-3),
-    [benches, visitedSet]
-  );
-
-  // Featured bench (first unvisited or first overall)
-  const unvisited = useMemo(() =>
-    benches.filter(b => !visitedSet.has(b.id)),
-    [benches, visitedSet]
-  );
-  const featured = unvisited.length > 0 ? unvisited[0] : benches[0];
-  const featuredColor = featured?.colors?.[0] || "#C4572A";
-
-  const currentDate = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  const quote = quotes.length > 0 ? (quotes[visitedCount % quotes.length] ?? quotes[0]) : undefined;
+  const currentDate = new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" });
 
   if (isLoading) {
     return (
@@ -85,174 +88,254 @@ const ProgressPage = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      <main className="flex-1">
-        {/* Hero section */}
-        <div className="container max-w-4xl py-8 sm:py-12">
+      <main className="flex-1 animate-fade-in">
+        <div className="container max-w-4xl py-8 sm:py-14">
+
           {/* Back link */}
-          <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors mb-6 uppercase tracking-widest">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition-colors mb-8 uppercase tracking-widest"
+          >
             <ArrowLeft className="w-3 h-3" />
-            Personal Archive Vol. IV
+            Torna alla mappa
           </Link>
 
-          {/* Title area */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-6">
+          {/* ── Title ── */}
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-8">
             <div>
-              <h1 className="text-4xl sm:text-6xl leading-none mb-1">
-                Passport &<br />
-                <span className="font-editorial italic font-normal">Progress</span>
+              <h1 className="font-display text-5xl sm:text-7xl font-bold leading-none mb-3">
+                Il tuo<br />
+                <span className="font-editorial italic font-normal">Passaporto</span>
               </h1>
-              <p className="text-sm text-muted-foreground font-editorial mt-3 max-w-sm">
-                A curated record of your high-altitude discoveries. Every stamp tells a story of the horizon reached and the stillness found.
+              <p className="text-sm text-muted-foreground font-editorial italic max-w-xs leading-relaxed">
+                Il registro delle tue scoperte. Ogni timbro è una storia raggiunta.
               </p>
             </div>
-            <div className="mt-4 sm:mt-0 text-right">
-              <p className="text-sm text-muted-foreground">{currentDate}</p>
-              <p className="text-sm font-display font-bold text-primary mt-1">{getExplorerGrade(percentage)}</p>
+            <div className="mt-5 sm:mt-0 text-left sm:text-right">
+              <p className="text-xs text-muted-foreground capitalize tracking-widest uppercase">{currentDate}</p>
+              <p className="font-display text-sm font-bold text-primary mt-1">{getExplorerGrade(percentage)}</p>
             </div>
           </div>
 
-          <div className="editorial-rule-thick mb-8" />
+          <div className="editorial-rule-thick mb-10" />
 
-          {/* Two column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            {/* Left column */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* The Ledger */}
-              <div className="bg-card border border-border rounded-lg p-5 shadow-[var(--shadow-editorial)]">
-                <h3 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4 font-medium">The Ledger</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Altitude Traversed</p>
-                      <p className="text-3xl font-display font-bold leading-none mt-1">
-                        {(totalAltitude / 1000).toFixed(1)} <span className="text-base font-normal text-muted-foreground">km</span>
-                      </p>
-                    </div>
-                    <div className="flex gap-0.5">
-                      {[...Array(Math.min(visitedCount, 8))].map((_, i) => (
-                        <div key={i} className="w-2 h-6 bg-primary rounded-sm" style={{ height: `${12 + i * 3}px` }} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="editorial-rule" />
-
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Benches Discovered</p>
-                      <p className="text-3xl font-display font-bold leading-none mt-1">
-                        {visitedCount} <span className="text-base font-normal text-muted-foreground">sites</span>
-                      </p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">+{Math.min(visitedCount, 3)} this month</p>
-                  </div>
-                </div>
+          {/* ── Stats row — thin bordered cells ── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 border border-border divide-y sm:divide-y-0 divide-x divide-border mb-12">
+            {[
+              { label: "Visitate", value: visitedCount, sub: `su ${total}` },
+              { label: "Completamento", value: `${percentage}%`, sub: null },
+              { label: "Regioni", value: regionsVisited, sub: `su ${totalRegions}` },
+              { label: "Paesi", value: countriesVisited || 0, sub: "esplorati" },
+            ].map(({ label, value, sub }) => (
+              <div key={label} className="px-5 py-6">
+                <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-2">{label}</p>
+                <p className="font-display text-4xl sm:text-5xl font-bold leading-none">{value}</p>
+                {sub && <p className="text-xs text-muted-foreground mt-1.5">{sub}</p>}
               </div>
+            ))}
+          </div>
 
-              {/* Featured bench card */}
-              {featured && (
-                <div className="relative rounded-lg overflow-hidden border border-border shadow-[var(--shadow-card)]">
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="text-[9px] uppercase tracking-[0.2em] bg-card/90 px-2 py-1 rounded-sm font-medium">
-                      Safe for Work
-                    </span>
-                  </div>
-                  <div className="bg-muted aspect-[4/3] flex items-center justify-center">
-                    <div className="text-center p-6">
-                      <div
-                        className="w-16 h-16 rounded-sm mx-auto mb-3 flex items-center justify-center text-xl font-bold"
-                        style={{ backgroundColor: featuredColor, color: "#fff" }}
-                      >
-                        #{featured.number}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-card">
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">The Next Expedition</p>
-                    <h3 className="font-display text-lg font-bold leading-tight">
-                      {featured.name.replace("Panchina ", "")}:<br />
-                      <span className="font-editorial italic font-normal">The Horizon</span>
-                    </h3>
-                    <p className="text-xs text-muted-foreground font-editorial mt-2 line-clamp-2">
-                      {featured.description || "Questa panchina gigante invita i visitatori a fermarsi, sedersi e tornare bambini."}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wider">
-                      Difficulty: Moderate · {featured.region}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
+          {/* ── Two-column layout ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
 
-            {/* Right column */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* The Stamp Collection */}
-              <div>
-                <div className="flex items-center justify-between mb-1">
+            {/* ── Left: stamp collection + todo list ── */}
+            <div className="lg:col-span-3 space-y-12">
+
+              {/* Stamp collection */}
+              <section>
+                <div className="flex items-baseline justify-between mb-4">
                   <h3 className="font-display text-xl font-bold">
                     The <span className="font-editorial italic font-normal">Stamp</span> Collection
                   </h3>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    Portfolio · Recent Passports
-                  </p>
+                  <span className="text-xs text-muted-foreground">{visitedCount} / {total}</span>
                 </div>
-                <div className="editorial-rule mb-5" />
+                <div className="border-b border-border mb-6" />
 
-                <div className="grid grid-cols-3 gap-4">
-                  {benches.slice(0, 12).map((bench) => {
-                    const isVisited = visitedIds.includes(bench.id);
-                    const bColor = bench.colors?.[0] || "#C4572A";
-                    return (
-                      <div
-                        key={bench.id}
-                        className="text-center cursor-pointer group"
-                        onClick={() => toggleVisited(bench.id)}
-                      >
-                        {/* Stamp circle */}
-                        <div className={`
-                          w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2
-                          flex items-center justify-center
-                          border-2 transition-all duration-300
-                          ${isVisited
-                            ? "border-transparent shadow-[var(--shadow-card)]"
-                            : "border-dashed border-border opacity-50 group-hover:opacity-80"
-                          }
-                        `}
-                        style={isVisited ? { backgroundColor: `${bColor}20`, borderColor: bColor } : {}}
-                        >
-                          {isVisited ? (
-                            <Check className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: bColor }} />
-                          ) : (
+                {visitedCount === 0 ? (
+                  <div className="py-10 text-center">
+                    {/* Show a few locked previews */}
+                    <div className="flex justify-center gap-4 mb-6 opacity-30">
+                      {shuffledUnvisited.slice(0, 3).map((bench) => (
+                        <div key={bench.id} className="text-center">
+                          <div className="w-14 h-14 rounded-full mx-auto mb-1 flex items-center justify-center border-2 border-dashed border-border">
                             <Lock className="w-4 h-4 text-muted-foreground" />
-                          )}
+                          </div>
                         </div>
-                        {/* Date label */}
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                          {isVisited && bench.installed_on ? parseLocalDate(bench.installed_on).getFullYear() : "—"}
-                        </p>
-                        {/* Name */}
-                        <p className={`text-xs font-editorial italic leading-tight ${
-                          isVisited ? "text-foreground" : "text-muted-foreground"
-                        }`}>
-                          {bench.name.replace("Panchina ", "").replace(" di ", " d'").split(" ").slice(0, 2).join(" ")}
+                      ))}
+                    </div>
+                    <p className="text-sm text-muted-foreground font-editorial italic">
+                      Non hai ancora visitato nessuna panchina.<br />Vai sulla mappa e inizia!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-x-4 gap-y-6">
+                    {/* Visited stamps */}
+                    {visitedBenches.map((bench, i) => {
+                      const bColor = bench.colors?.[0] || "#C4572A";
+                      return (
+                        <Link
+                          key={bench.id}
+                          to={`/bench/${bench.id}`}
+                          className="text-center group animate-fade-in"
+                          style={{ animationDelay: `${i * 40}ms`, animationFillMode: "backwards" }}
+                        >
+                          <div
+                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md"
+                            style={{ backgroundColor: `${bColor}20`, borderColor: bColor }}
+                          >
+                            <Check className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:scale-110" style={{ color: bColor }} />
+                          </div>
+                          <p className="text-xs font-editorial italic leading-tight text-foreground line-clamp-2">
+                            {bench.name}
+                          </p>
+                          <p className="text-[9px] text-muted-foreground mt-0.5 truncate">
+                            {bench.location}
+                          </p>
+                        </Link>
+                      );
+                    })}
+
+                    {/* 2 random unvisited — dimmed locked stamps */}
+                    {previewUnvisited.map((bench) => (
+                      <div key={bench.id} className="text-center opacity-30 select-none">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-2 border-dashed border-border">
+                          <Lock className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <p className="text-xs font-editorial italic leading-tight text-muted-foreground line-clamp-2">
+                          {bench.name}
                         </p>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* Todo list */}
+              <section>
+                <div className="flex items-baseline justify-between mb-4">
+                  <h3 className="font-display text-xl font-bold">
+                    Da <span className="font-editorial italic font-normal">Visitare</span>
+                  </h3>
+                  <span className="text-xs text-muted-foreground">selezione casuale</span>
+                </div>
+                <div className="border-b border-border mb-2" />
+
+                {todoList.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-muted-foreground font-editorial italic">
+                    Hai visitato tutte le panchine — complimenti!
+                  </p>
+                ) : (
+                  <div className="divide-y divide-border/40">
+                    {todoList.map((bench) => {
+                      const bColor = bench.colors?.[0] || "#C4572A";
+                      return (
+                        <div
+                          key={bench.id}
+                          className="flex items-center gap-3 py-3.5 px-1 hover:bg-muted/30 -mx-1 transition-colors"
+                        >
+                          {/* Color dot */}
+                          <div
+                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: bColor }}
+                          />
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-display text-sm font-bold leading-tight truncate">
+                              {bench.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
+                              <MapPin className="w-3 h-3 shrink-0" />
+                              {bench.location}{bench.region ? `, ${bench.region}` : ""}
+                            </p>
+                          </div>
+                          {/* Neobrutalist action buttons */}
+                          <div className="shrink-0">
+                            <VisitedButton
+                              visited={visitedSet.has(bench.id)}
+                              onToggleVisited={() => toggleVisited(bench.id)}
+                              benchId={bench.id}
+                              className="h-8 px-2 text-[10px] font-black"
+                            />
+                          </div>
+                          <Link
+                            to={`/bench/${bench.id}`}
+                            className="shrink-0 w-8 h-8 border-2 border-black bg-white flex items-center justify-center hover:bg-secondary transition-colors"
+                            aria-label={`Apri i dettagli di ${bench.name}`}
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </div>
+
+            {/* ── Right: progress sidebar ── */}
+            <div className="lg:col-span-2 space-y-8">
+
+              {/* Overall progress */}
+              <div>
+                <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-5">
+                  Il tuo percorso
+                </p>
+                <div className="space-y-5">
+                  <div>
+                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                      <span>Panchine</span>
+                      <span>{visitedCount} / {total}</span>
+                    </div>
+                    <Progress value={percentage} className="h-px border-0 rounded-none" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                      <span>Regioni</span>
+                      <span>{regionsVisited} / {totalRegions}</span>
+                    </div>
+                    <Progress
+                      value={totalRegions > 0 ? (regionsVisited / totalRegions) * 100 : 0}
+                      className="h-px border-0 rounded-none"
+                    />
+                  </div>
+                </div>
+                <div className="border-t border-border/50 mt-6 pt-6">
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-1.5">
+                    Grado esploratore
+                  </p>
+                  <p className="font-display text-lg font-bold text-primary">
+                    {getExplorerGrade(percentage)}
+                  </p>
                 </div>
               </div>
 
-              {/* Quote block */}
-              <div className="bg-muted rounded-lg p-8 text-center my-6">
-                <p className="text-primary text-2xl font-display mb-3">"</p>
-                <p className="font-editorial italic text-lg sm:text-xl leading-relaxed max-w-md mx-auto text-foreground/80">
-                  "{quote?.text}"
-                </p>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-4">
-                  — {quote?.source}
-                </p>
-              </div>
+              {/* Per-country breakdown */}
+              {allCountries.length > 1 && (
+                <div>
+                  <p className="text-[9px] uppercase tracking-widest text-muted-foreground mb-5">
+                    Per Paese
+                  </p>
+                  <div className="space-y-4">
+                    {allCountries.map(country => {
+                      const totalC = benches.filter(b => b.country === country).length;
+                      const visitedC = visitedBenches.filter(b => b.country === country).length;
+                      return (
+                        <div key={country}>
+                          <div className="flex justify-between text-xs text-muted-foreground mb-2">
+                            <span>{country}</span>
+                            <span>{visitedC} / {totalC}</span>
+                          </div>
+                          <Progress
+                            value={totalC > 0 ? (visitedC / totalC) * 100 : 0}
+                            className="h-px border-0 rounded-none"
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
