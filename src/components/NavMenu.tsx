@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Drawer } from "vaul";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useTheme } from "next-themes";
+import { useThemeTransition } from "@/hooks/useThemeTransition";
 import {
   Menu, X, MapPin, BookOpen, Stamp,
   Settings as SettingsIcon, LogIn, LogOut, Mountain, Sun, Moon,
@@ -22,7 +22,7 @@ const NavMenu = () => {
   const location  = useLocation();
   const navigate  = useNavigate();
   const { user, signOut } = useAuth();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useThemeTransition();
 
   const initials = (user?.user_metadata?.display_name || user?.email || "?")
     .slice(0, 2).toUpperCase();

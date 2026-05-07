@@ -53,6 +53,28 @@
     opacity: 0.055;
   }
 
+  /* Dark map tiles via CSS filter (no API key needed) */
+  .map-tiles-dark {
+    filter: grayscale(0.9) invert(0.92) brightness(0.85);
+  }
+
+  @keyframes theme-wipe-left {
+    0%   { transform: translateX(-100%); animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
+    50%  { transform: translateX(0%);    animation-timing-function: linear; }
+    50%  { transform: translateX(0%);    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06); }
+    100% { transform: translateX(100%);  }
+  }
+
+  html.theme-wipe::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: hsl(16, 60%, 46%);
+    pointer-events: none;
+    animation: theme-wipe-left 1.2s both;
+  }
+
   h1, h2, h3, h4, h5, h6 {
     font-family: 'DM Serif Display', Georgia, serif;
     font-weight: 400;          /* Serif display looks best at regular weight */
