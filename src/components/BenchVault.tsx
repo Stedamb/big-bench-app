@@ -1,11 +1,11 @@
 import * as React from "react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
+import { motion, AnimatePresence } from "motion/react";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { X, MapPin, Mountain, Calendar, Palette, Camera, ExternalLink } from "lucide-react";
+import { X, MapPin, Camera, Check, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { parseLocalDate } from "@/lib/utils";
 import type { Bench } from "@/hooks/useBenches";
-import VisitedButton from "@/components/VisitedButton";
 
 interface BenchVaultProps {
   bench: Bench | null;
@@ -16,105 +16,138 @@ interface BenchVaultProps {
 
 const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProps) => {
   const navigate = useNavigate();
-  
   const isOpen = !!bench;
 
-  const primaryColor = bench?.colors?.[0] || "#C4572A";
+  const primaryColor   = bench?.colors?.[0] || "hsl(var(--primary))";
   const secondaryColor = bench?.colors?.[1] || primaryColor;
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="border-t-4 border-black rounded-none h-[90vh] sm:h-[80vh]">
+      <DrawerContent className="rounded-t-2xl h-[92vh] sm:h-[80vh] border-t border-border">
         <DrawerHeader className="sr-only">
-          <DrawerTitle>{bench?.name || "Bench Details"}</DrawerTitle>
+          <DrawerTitle>{bench?.name ?? "Bench Details"}</DrawerTitle>
           <DrawerDescription>Detailed view of the selected bench.</DrawerDescription>
         </DrawerHeader>
 
+        {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 sm:top-6 sm:right-6 p-2 border-2 border-black bg-white shadow-neo-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          className="absolute top-5 right-5 w-8 h-8 rounded-full border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10"
         >
-          <X className="w-5 h-5 sm:w-6 sm:h-6" />
+          <X className="w-4 h-4" />
         </button>
-        
-        {bench && (
-          <div className="overflow-y-auto flex-1 min-h-0 px-4 sm:px-8 py-6 sm:py-10">
-            <div className="flex flex-col gap-4 sm:gap-8">
-              {/* Header section */}
-              <div className="space-y-2 sm:space-y-4">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="px-2 py-0.5 sm:px-3 sm:py-1 border-2 border-black font-black text-xs sm:text-sm shadow-neo-sm bg-white"
-                  >
-                    NO. {bench.number}
-                  </div>
-                  <div className="flex -space-x-1">
-                    {bench.colors?.map((c, i) => (
-                      <div
-                        key={i}
-                        className="w-4 h-4 sm:w-6 sm:h-6 rounded-none border-2 border-black"
-                        style={{ backgroundColor: c }}
-                      />
-                    ))}
-                  </div>
-                </div>
-                
-                <h2 className="text-3xl sm:text-6xl font-black uppercase leading-none tracking-tight break-words">
-                  {bench.name}
-                </h2>
-                
-                <p className="text-base sm:text-xl font-black flex items-center gap-2 text-black/60 uppercase">
-                  <MapPin className="w-4 h-4 sm:w-6 sm:h-6" />
-                  {bench.location}, {bench.region}
-                </p>
-              </div>
 
-              {/* Main content grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
-                <div className="relative border-4 border-black bg-white p-1.5 sm:p-3 shadow-neo">
-                  <div className="aspect-video sm:aspect-square lg:aspect-[4/3] bg-muted flex flex-col items-center justify-center border-2 border-black overflow-hidden relative">
-                     <Camera className="w-10 h-10 sm:w-16 sm:h-16 mb-2 opacity-20" />
-                     <p className="text-[10px] sm:text-xs font-black uppercase tracking-widest opacity-30">No Image Available</p>
-                     {/* Color strip */}
-                     <div className="absolute bottom-0 left-0 right-0 h-3 sm:h-6" style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }} />
-                  </div>
-                </div>
+        <AnimatePresence mode="wait">
+          {bench && (
+            <motion.div
+              key={bench.id}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 8 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="overflow-y-auto flex-1 min-h-0 px-5 sm:px-8 pb-8 pt-4"
+            >
+              <div className="max-w-2xl mx-auto flex flex-col gap-6 sm:gap-8">
 
-                <div className="flex flex-col justify-between gap-6 sm:gap-10">
-                  <div className="space-y-4 sm:space-y-8">
-                    <p className="text-lg sm:text-2xl font-bold leading-tight italic">
-                      "{bench.installed_on ? `Installata il ${parseLocalDate(bench.installed_on).toLocaleDateString("it-IT", { year: 'numeric', month: 'long', day: 'numeric' })}` : "Parte del progetto Big Bench Community Project"}.
-                      {bench.artist ? ` Creata dall'artista ${bench.artist}.` : ""} Questa panchina offre una vista panoramica unica."
-                    </p>
-                    
-                    <div className="grid grid-cols-2 gap-3 sm:gap-6">
-                      <div className="border-2 border-black p-2 sm:p-4 bg-secondary/30">
-                        <p className="text-[8px] sm:text-[10px] font-black uppercase opacity-60">Coordinates</p>
-                        <p className="font-black text-xs sm:text-lg">{bench.lat.toFixed(4)}°N, {bench.lng.toFixed(4)}°E</p>
-                      </div>
-                      <div className="border-2 border-black p-2 sm:p-4 bg-secondary/30">
-                        <p className="text-[8px] sm:text-[10px] font-black uppercase opacity-60">Status</p>
-                        <p className="font-black text-xs sm:text-lg">{visited ? "VISITED" : "NOT VISITED"}</p>
-                      </div>
+                {/* Color accent bar */}
+                <div
+                  className="h-1 w-16 rounded-full opacity-80"
+                  style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                />
+
+                {/* Title block */}
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground font-sans tracking-widest uppercase">
+                      No. {bench.number}
+                    </span>
+                    <div className="flex gap-1">
+                      {bench.colors?.map((c, i) => (
+                        <div key={i} className="w-3 h-3 rounded-full border border-border/50" style={{ backgroundColor: c }} />
+                      ))}
                     </div>
                   </div>
+                  <h2 className="font-display text-3xl sm:text-5xl leading-none">{bench.name}</h2>
+                  <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 shrink-0" />
+                    {bench.location}{bench.region ? `, ${bench.region}` : ""}
+                  </p>
+                </div>
 
-                  <div className="flex flex-col gap-3 sm:gap-5 pb-8 sm:pb-0">
-                    <Button
-                      size="lg"
-                      className="w-full text-base sm:text-xl h-14 sm:h-20"
-                      onClick={() => navigate(`/bench/${bench.id}`)}
-                    >
-                      DETTAGLI <ExternalLink className="ml-2 w-5 h-5 sm:w-8 sm:h-8" />
-                    </Button>
-                    
-                    <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="w-full text-base sm:text-xl h-14 sm:h-20" />
+                {/* Main grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  {/* Image placeholder */}
+                  <div className="rounded-xl border border-border bg-muted aspect-[4/3] flex flex-col items-center justify-center relative overflow-hidden">
+                    <Camera className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                    <p className="text-xs text-muted-foreground/40 font-sans tracking-wider uppercase">No photo</p>
+                    <div
+                      className="absolute bottom-0 left-0 right-0 h-1"
+                      style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                    />
+                  </div>
+
+                  {/* Info + actions */}
+                  <div className="flex flex-col justify-between gap-5">
+                    <div className="space-y-4">
+                      {bench.installed_on && (
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Inaugurata</p>
+                          <p className="text-sm font-medium">
+                            {parseLocalDate(bench.installed_on).toLocaleDateString("it-IT", {
+                              year: "numeric", month: "long", day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      )}
+                      {bench.artist && (
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Artista</p>
+                          <p className="text-sm font-medium">{bench.artist}</p>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-lg border border-border p-3 bg-muted/40">
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Coordinate</p>
+                          <p className="text-xs font-medium font-sans tabular-nums">
+                            {bench.lat.toFixed(4)}°N
+                          </p>
+                          <p className="text-xs font-medium font-sans tabular-nums">
+                            {bench.lng.toFixed(4)}°E
+                          </p>
+                        </div>
+                        <div className="rounded-lg border border-border p-3 bg-muted/40">
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Stato</p>
+                          <p className={`text-xs font-medium ${visited ? "text-primary" : "text-muted-foreground"}`}>
+                            {visited ? "Visitata" : "Non visitata"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        size="lg"
+                        className="w-full"
+                        onClick={() => navigate(`/bench/${bench.id}`)}
+                      >
+                        Esplora <ExternalLink className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="lg"
+                        variant={visited ? "secondary" : "outline"}
+                        className="w-full"
+                        onClick={onToggleVisited}
+                      >
+                        <Check className="w-4 h-4" />
+                        {visited ? "Visitata" : "Segna visitata"}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </DrawerContent>
     </Drawer>
   );
