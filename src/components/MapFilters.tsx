@@ -1,160 +1,92 @@
-import { Search, X, Filter, ChevronDown } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
-import { translateRegion } from "@/lib/utils";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface MapFiltersProps {
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  selectedCountry: string;
-  onCountryChange: (country: string) => void;
-  selectedRegion: string;
-  onRegionChange: (region: string) => void;
-  countries: string[];
-  regions: string[];
-  totalResults: number;
+  searchQuery:      string;
+  onSearchChange:   (v: string) => void;
+  selectedCountry:  string;
+  onCountryChange:  (v: string) => void;
+  selectedRegion:   string;
+  onRegionChange:   (v: string) => void;
+  countries:        string[];
+  regions:          string[];
+  totalResults:     number;
 }
 
 const MapFilters = ({
-  searchQuery,
-  onSearchChange,
-  selectedCountry,
-  onCountryChange,
-  selectedRegion,
-  onRegionChange,
-  countries,
-  regions,
-  totalResults,
+  searchQuery, onSearchChange,
+  selectedCountry, onCountryChange,
+  selectedRegion, onRegionChange,
+  countries, regions, totalResults,
 }: MapFiltersProps) => {
-  const clearFilters = () => {
-    onSearchChange("");
-    onCountryChange("all");
-    onRegionChange("all");
-  };
-
-  const activeFiltersCount = 
-    (selectedCountry !== "all" ? 1 : 0) + 
-    (selectedRegion !== "all" ? 1 : 0);
-
   const hasSearch = searchQuery.length > 0;
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2 bg-white p-1.5 sm:p-2 rounded-none border-2 sm:border-4 border-black shadow-neo w-full max-w-sm sm:max-w-md">
+    <div className="flex items-center gap-1.5 bg-background/70 backdrop-blur-md px-2 py-1.5 rounded-2xl border border-border shadow-md w-full max-w-xl">
+      {/* Search */}
       <div className="relative flex-1 flex items-center">
-        <Search className="absolute left-2 sm:left-3 w-4 h-4 sm:w-5 sm:h-5 text-black" />
+        <Search className="absolute left-2.5 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
         <Input
-          placeholder="CERCA..."
+          placeholder="Cerca panchina…"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          aria-label="Search locations"
-          className="pl-8 sm:pl-10 pr-6 sm:pr-8 h-8 sm:h-10 border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/40 font-black uppercase tracking-tight sm:tracking-wider text-xs sm:text-base"
+          className="pl-8 pr-7 h-8 border-none bg-transparent shadow-none focus-visible:ring-0 text-sm placeholder:text-foreground/60 rounded-xl"
         />
         {hasSearch && (
           <button
             type="button"
             onClick={() => onSearchChange("")}
-            className="absolute right-1 sm:right-2 p-1 hover:bg-secondary rounded-none transition-colors border-2 border-transparent hover:border-black"
-            aria-label="Clear search"
+            className="absolute right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
-            <X className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
+            <X className="w-3 h-3" />
           </button>
         )}
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2 px-1 border-l-2 sm:border-l-4 border-black">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8 sm:h-10 rounded-none gap-1 sm:gap-2 border-2 border-black bg-white shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none px-2 sm:px-4"
-              aria-label={activeFiltersCount > 0 ? `Filtri (${activeFiltersCount} attivi)` : "Filtri"}
-            >
-              <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline uppercase font-black tracking-tight">Filtri</span>
-              <span className="sr-only sm:hidden">Filtri</span>
-              {activeFiltersCount > 0 && (
-                <Badge variant="default" className="h-4 w-4 sm:h-6 sm:w-6 p-0 flex items-center justify-center rounded-none shadow-none border-2 border-black text-[8px] sm:text-xs font-black" aria-hidden="true">
-                  {activeFiltersCount}
-                </Badge>
-              )}
-              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80 p-6 rounded-none border-4 border-black shadow-neo" align="end">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b-2 border-black pb-2">
-                <h4 className="font-display font-black text-xl uppercase italic">Filtra</h4>
-                {(activeFiltersCount > 0 || hasSearch) && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={clearFilters}
-                    className="h-8 px-2 text-[10px] font-black uppercase tracking-widest border-2 border-transparent hover:border-black"
-                  >
-                    Reset
-                  </Button>
-                )}
-              </div>
-              
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest font-black text-black">
-                    Nazione
-                  </label>
-                  <Select value={selectedCountry} onValueChange={onCountryChange}>
-                    <SelectTrigger className="h-10 rounded-none border-2 border-black bg-white font-bold uppercase">
-                      <SelectValue placeholder="Tutte le nazioni" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-none border-2 border-black shadow-neo-sm">
-                      <SelectItem value="all">Tutte le nazioni</SelectItem>
-                      {countries.map((c) => (
-                        <SelectItem key={c} value={c}>{c}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+      <div className="w-px h-5 bg-border shrink-0" />
 
-                <div className="space-y-2">
-                  <label className="text-xs uppercase tracking-widest font-black text-black">
-                    Regione
-                  </label>
-                  <Select value={selectedRegion} onValueChange={onRegionChange}>
-                    <SelectTrigger className="h-10 rounded-none border-2 border-black bg-white font-bold uppercase">
-                      <SelectValue placeholder="Tutte le regioni" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-none border-2 border-black shadow-neo-sm">
-                      <SelectItem value="all">Tutte le regioni</SelectItem>
-                      {regions.map((r) => (
-                        <SelectItem key={r} value={r}>{translateRegion(r)}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+      {/* Country filter */}
+      <DropdownMenu>
+        <DropdownMenuTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted whitespace-nowrap">
+          {selectedCountry === "all" ? "Paese" : selectedCountry}
+          <ChevronDown className="w-3 h-3" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="z-[1100] min-w-[120px]">
+          <DropdownMenuItem onClick={() => onCountryChange("all")}>Tutti</DropdownMenuItem>
+          {countries.map(c => (
+            <DropdownMenuItem key={c} onClick={() => onCountryChange(c)}>{c}</DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-              <div className="pt-4 border-t-2 border-black mt-2">
-                <p className="text-xs uppercase tracking-widest text-center text-black font-black">
-                  {totalResults} Risultati
-                </p>
-              </div>
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+      {/* Region filter */}
+      {regions.length > 0 && (
+        <>
+          <div className="w-px h-5 bg-border shrink-0" />
+          <DropdownMenu>
+            <DropdownMenuTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted whitespace-nowrap">
+              {selectedRegion === "all" ? "Regione" : selectedRegion}
+              <ChevronDown className="w-3 h-3" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="z-[1100] min-w-[140px] max-h-64 overflow-y-auto">
+              <DropdownMenuItem onClick={() => onRegionChange("all")}>Tutte</DropdownMenuItem>
+              {regions.map(r => (
+                <DropdownMenuItem key={r} onClick={() => onRegionChange(r)}>{r}</DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </>
+      )}
+
+      {/* Result count */}
+      <div className="w-px h-5 bg-border shrink-0" />
+      <span className="text-xs text-muted-foreground px-1 tabular-nums whitespace-nowrap">{totalResults}</span>
     </div>
   );
 };

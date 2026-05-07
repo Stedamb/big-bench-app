@@ -1,5 +1,6 @@
-import { LogIn, LogOut, MapPin, Mountain, Settings as SettingsIcon, User as UserIcon } from "lucide-react";
+import { LogIn, LogOut, MapPin, Mountain, Settings as SettingsIcon, User as UserIcon, Sun, Moon } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTheme } from "next-themes";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,8 +17,9 @@ import NavMenu from "@/components/NavMenu";
 
 const Header = () => {
   const location = useLocation();
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { user, signOut } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
   const isHome = location.pathname === "/";
 
   const handleSignOut = async () => {
@@ -34,70 +36,65 @@ const Header = () => {
     .toUpperCase();
 
   return (
-    <header className="relative z-[1000] bg-white border-b-2 sm:border-b-4 border-black">
-      <div className="container py-2 sm:py-4 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-          <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-none bg-primary border-2 border-black shadow-neo-sm flex items-center justify-center group-hover:translate-x-[2px] group-hover:translate-y-[2px] group-hover:shadow-none transition-all">
-            <Mountain className="w-4 h-4 sm:w-6 sm:h-6 text-primary-foreground" />
+    <header className="sticky top-0 z-[1000] border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="container py-3 flex items-center justify-between">
+
+        {/* Logo */}
+        <Link to="/" className="flex items-center gap-2.5 group">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center transition-all duration-200 group-hover:bg-primary/15">
+            <Mountain className="w-4 h-4 text-primary" />
           </div>
-          <div className="flex flex-col">
-            <span className="font-display text-lg sm:text-2xl font-black uppercase leading-none tracking-tight">
+          <div className="flex flex-col leading-none">
+            <span className="font-display text-base leading-tight tracking-tight text-foreground">
               Big Bench
             </span>
-            <span className="text-[8px] sm:text-xs text-black font-bold uppercase tracking-widest">
+            <span className="text-[10px] text-muted-foreground tracking-widest uppercase font-sans">
               Community Project
             </span>
           </div>
         </Link>
 
-        <nav className="flex items-center gap-2 sm:gap-8">
-          {/* Desktop nav links — hidden on mobile */}
-          <Link
-            to="/"
-            className={`hidden sm:flex text-sm font-black uppercase tracking-widest transition-colors hover:text-primary items-center gap-1 ${
-              isHome ? "text-primary" : "text-black"
-            }`}
-          >
-            <MapPin className="w-4 h-4" />
-            Mappa
-          </Link>
-          <Link
-            to="/guestbook"
-            className={`hidden sm:block text-sm font-black uppercase tracking-widest transition-colors hover:text-primary ${
-              location.pathname === "/guestbook" ? "text-primary" : "text-black"
-            }`}
-          >
-            Guestbook
-          </Link>
-          <Link
-            to="/progress"
-            className={`hidden sm:block text-sm font-black uppercase tracking-widest transition-colors hover:text-primary ${
-              location.pathname === "/progress" ? "text-primary" : "text-black"
-            }`}
-          >
-            Passaporto
-          </Link>
+        <nav className="flex items-center gap-1 sm:gap-6">
+          {/* Desktop nav links */}
+          {[
+            { to: "/", label: "Mappa", icon: MapPin },
+            { to: "/guestbook", label: "Guestbook" },
+            { to: "/progress", label: "Passaporto" },
+          ].map(({ to, label, icon: Icon }) => {
+            const active = location.pathname === to;
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={`hidden sm:flex items-center gap-1.5 text-sm transition-colors duration-150 ${
+                  active
+                    ? "text-foreground font-medium"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {Icon && <Icon className="w-3.5 h-3.5" />}
+                {label}
+              </Link>
+            );
+          })}
 
           {/* Desktop: user avatar / login */}
-          <div className="hidden sm:block">
+          <div className="hidden sm:flex items-center gap-2">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring" aria-label="Account menu">
+                  <button className="rounded-full focus:outline-none">
                     <Avatar className="w-8 h-8">
-                      <AvatarImage
-                        src={user.user_metadata?.avatar_url}
-                        alt="Avatar"
-                      />
-                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt="Avatar" />
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                         {initials}
                       </AvatarFallback>
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 z-[1100]">
-                  <DropdownMenuLabel className="font-editorial">
-                    <p className="font-display font-bold text-sm truncate">
+                <DropdownMenuContent align="end" className="w-56 z-[1100] border-0 shadow-lg">
+                  <DropdownMenuLabel>
+                    <p className="font-medium text-sm truncate">
                       {user.user_metadata?.display_name || "Utente"}
                     </p>
                     <p className="text-xs text-muted-foreground truncate font-normal">
@@ -106,40 +103,43 @@ const Header = () => {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
-                    <SettingsIcon className="w-4 h-4 mr-2" />
-                    Impostazioni
+                    <SettingsIcon className="w-4 h-4 mr-2" /> Impostazioni
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/progress")}>
-                    <UserIcon className="w-4 h-4 mr-2" />
-                    Il mio passaporto
+                    <UserIcon className="w-4 h-4 mr-2" /> Il mio passaporto
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+                    {resolvedTheme === "dark" ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+                    {resolvedTheme === "dark" ? "Modalità chiara" : "Modalità scura"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Esci
+                    <LogOut className="w-4 h-4 mr-2" /> Esci
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                size="sm"
-                variant="default"
-                onClick={() => navigate("/auth")}
-                className="gap-1.5 h-8"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                Accedi
-              </Button>
+              <>
+                <button
+                  onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                  aria-label="Toggle theme"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-150"
+                >
+                  {resolvedTheme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                </button>
+                <Button size="sm" variant="outline" onClick={() => navigate("/auth")} className="gap-1.5">
+                  <LogIn className="w-3.5 h-3.5" />
+                  Accedi
+                </Button>
+              </>
             )}
           </div>
 
-          {/* Hamburger — visible only on mobile */}
-          
-          <NavMenu />
+          {/* Hamburger — mobile only */}
+          <div className="sm:hidden"><NavMenu /></div>
         </nav>
       </div>
-
-      <div className="editorial-rule-double" />
     </header>
   );
 };
