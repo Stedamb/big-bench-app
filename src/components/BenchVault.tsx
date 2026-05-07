@@ -1,10 +1,11 @@
 import * as React from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerFooter } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { X, MapPin, Mountain, Calendar, Palette, Camera, Check, ExternalLink } from "lucide-react";
+import { X, MapPin, Mountain, Calendar, Palette, Camera, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { parseLocalDate } from "@/lib/utils";
 import type { Bench } from "@/hooks/useBenches";
+import VisitedButton from "@/components/VisitedButton";
 
 interface BenchVaultProps {
   bench: Bench | null;
@@ -104,21 +105,10 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                       className="w-full text-base sm:text-xl h-14 sm:h-20"
                       onClick={() => navigate(`/bench/${bench.id}`)}
                     >
-                      EXPLORE FULL STORY <ExternalLink className="ml-2 w-5 h-5 sm:w-8 sm:h-8" />
+                      DETTAGLI <ExternalLink className="ml-2 w-5 h-5 sm:w-8 sm:h-8" />
                     </Button>
                     
-                    <Button
-                      size="lg"
-                      variant={visited ? "secondary" : "outline"}
-                      className="w-full text-base sm:text-xl h-14 sm:h-20"
-                      onClick={onToggleVisited}
-                    >
-                      {visited ? (
-                        <>CHECKED IN <Check className="ml-2 w-5 h-5 sm:w-8 sm:h-8" /></>
-                      ) : (
-                        <>MARK AS VISITED</>
-                      )}
-                    </Button>
+                    <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="w-full text-base sm:text-xl h-14 sm:h-20" />
                   </div>
                 </div>
               </div>
