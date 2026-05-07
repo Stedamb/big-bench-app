@@ -19,7 +19,11 @@ const VisitedButton = ({ visited, onToggleVisited, className = "", benchId }: Vi
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
 
   useEffect(() => {
+    clearTimer();
     setConfirming(false);
+    return () => {
+      clearTimer();
+    };
   }, [benchId]);
 
   const clearTimer = () => {
