@@ -22,6 +22,11 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
   const primaryColor = bench?.colors?.[0] || "#C4572A";
   const secondaryColor = bench?.colors?.[1] || primaryColor;
 
+  const benchLat = bench?.lat || 0;
+  const benchLon = bench?.lng || 0;
+  const latHemisphere = benchLat >= 0 ? 'N' : 'S';
+  const lonHemisphere = benchLon >= 0 ? 'E' : 'W';
+
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DrawerContent className="border-t-4 border-black rounded-none h-[90vh] sm:h-[80vh]">
@@ -90,7 +95,7 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                     <div className="grid grid-cols-2 gap-3 sm:gap-6">
                       <div className="border-2 border-black p-2 sm:p-4 bg-secondary/30">
                         <p className="text-[8px] sm:text-[10px] font-black uppercase opacity-60">Coordinates</p>
-                        <p className="font-black text-xs sm:text-lg">{bench.lat.toFixed(4)}°N, {bench.lng.toFixed(4)}°E</p>
+                        <p className="font-black text-xs sm:text-lg">{Math.abs(bench.lat).toFixed(4)}°{latHemisphere}, {Math.abs(bench.lng).toFixed(4)}°{lonHemisphere}</p>
                       </div>
                       <div className="border-2 border-black p-2 sm:p-4 bg-secondary/30">
                         <p className="text-[8px] sm:text-[10px] font-black uppercase opacity-60">Status</p>
@@ -108,7 +113,7 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                       DETTAGLI <ExternalLink className="ml-2 w-5 h-5 sm:w-8 sm:h-8" />
                     </Button>
                     
-                    <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="w-full text-base sm:text-xl h-14 sm:h-20" />
+                    <VisitedButton visited={visited} onToggleVisited={onToggleVisited} benchId={bench.id} className="w-full text-base sm:text-xl h-14 sm:h-20" />
                   </div>
                 </div>
               </div>
