@@ -1,6 +1,6 @@
-import { motion } from "motion/react";
-import { MapPin, Check, ArrowRight } from "lucide-react";
+import { MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import VisitedButton from "@/components/VisitedButton";
 import type { Bench } from "@/hooks/useBenches";
 
 interface BenchPopupProps {
@@ -14,12 +14,7 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
   const color = bench.colors?.[0] || "hsl(var(--primary))";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-      className="p-3 min-w-[240px] max-w-[280px]"
-    >
+    <div className="p-3 min-w-[240px] max-w-[280px]">
       {/* Number + name */}
         <div
           className="w-12 h-8 rounded-lg shrink-0 flex items-center justify-center text-xs font-medium text-white mb-2"
@@ -39,15 +34,7 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
 
       {/* Actions */}
       <div className="flex items-center gap-2 pt-3 border-t border-border">
-        <Button
-          size="sm"
-          variant={visited ? "secondary" : "outline"}
-          className="text-xs h-8 gap-1 flex-1"
-          onClick={(e) => { e.stopPropagation(); onToggleVisited(); }}
-        >
-          <Check className="w-3 h-3" />
-          {visited ? "Visitata" : "Segna"}
-        </Button>
+        <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="text-xs h-8 flex-1" />
         <Button
           size="sm"
           variant="default"
@@ -58,7 +45,7 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
           <ArrowRight className="w-3 h-3" />
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
