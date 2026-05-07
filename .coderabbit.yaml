@@ -1,16 +1,40 @@
-# Core configuration for CodeRabbit
-# Documentation: https://docs.coderabbit.ai/getting-started/configure-coderabbit
-
-# Ignore specific paths from analysis
-# Patterns are relative to the repository root
-# Standard glob patterns are supported
-path_filters:
-  - "scripts/**"
-  - "!scripts/README.md" # Optional: include documentation if it exists
-
-# Review settings
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en"
+early_access: false
 reviews:
-  # Enable/disable high-level summary of changes
-  summary: true
-  # Review only the lines changed in the PR
-  incremental_review: true
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  path_filters:
+    - "!**/.xml"
+    - "!**/__generated__/**"
+    - "!**/generated/**"
+    - "!**/*.json"
+    - "!**/*.svg"
+    - "!**/*.png"
+    - "!**/*.jpg"
+    - "!**/*.gif"
+    - "!**/*.lock"
+    - "scripts/**"
+
+  path_instructions:
+    - path: "**/*.{ts,tsx}"
+      instructions:
+        "Review the Typescript and React code for conformity with best practices in React, Recoil,
+        Graphql, and Typescript. Highlight any deviations."
+  auto_review:
+    enabled: true
+    ignore_title_keywords:
+      - "WIP"
+      - "DO NOT MERGE"
+      - "DRAFT"
+    drafts: false
+    base_branches:
+      - "develop"
+      - "main"
+      - "release/.*"
+      - "feat/.*"
+chat:
+  auto_reply: true

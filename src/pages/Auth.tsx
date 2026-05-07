@@ -84,6 +84,7 @@ const Auth = () => {
       return;
     }
     if (result.redirected) return;
+    setLoading(false);
     navigate("/", { replace: true });
   };
 

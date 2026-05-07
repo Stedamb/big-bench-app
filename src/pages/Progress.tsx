@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import { Check, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Link } from "react-router-dom";
+import { useMemo } from "react";
 import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches } from "@/hooks/useBenches";
@@ -35,26 +36,40 @@ const ProgressPage = () => {
   const visitedCount = visitedIds.filter(id => benchIds.has(id)).length;
   const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
 
-  const regionsVisited = new Set(
-    benches.filter(b => visitedIds.includes(b.id)).map(b => b.region)
-  ).size;
-  const totalRegions = new Set(benches.map(b => b.region)).size;
+  // Use a Set for O(1) lookups instead of O(n) Array.includes() inside filter loops
+  const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
+
+  const regionsVisited = useMemo(() =>
+    new Set(benches.filter(b => visitedSet.has(b.id)).map(b => b.region)).size,
+    [benches, visitedSet]
+  );
+  const totalRegions = useMemo(() =>
+    new Set(benches.map(b => b.region)).size,
+    [benches]
+  );
 
   // Total altitude of visited benches
-  const totalAltitude = benches
-    .filter(b => visitedIds.includes(b.id))
-    .reduce((sum, b) => sum + (b.altitude_m || 0), 0);
+  const totalAltitude = useMemo(() =>
+    benches.filter(b => visitedSet.has(b.id)).reduce((sum, b) => sum + (b.altitude_m || 0), 0),
+    [benches, visitedSet]
+  );
 
   // Recent visits (last 3 visited)
-  const recentVisits = benches.filter(b => visitedIds.includes(b.id)).slice(-3);
+  const recentVisits = useMemo(() =>
+    benches.filter(b => visitedSet.has(b.id)).slice(-3),
+    [benches, visitedSet]
+  );
 
-  // Featured bench (random unvisited or first)
-  const unvisited = benches.filter(b => !visitedIds.includes(b.id));
+  // Featured bench (first unvisited or first overall)
+  const unvisited = useMemo(() =>
+    benches.filter(b => !visitedSet.has(b.id)),
+    [benches, visitedSet]
+  );
   const featured = unvisited.length > 0 ? unvisited[0] : benches[0];
   const featuredColor = featured?.colors?.[0] || "#C4572A";
 
   const currentDate = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  const quote = quotes[visitedCount % quotes.length];
+  const quote = quotes.length > 0 ? (quotes[visitedCount % quotes.length] ?? quotes[0]) : undefined;
 
   if (isLoading) {
     return (
@@ -232,10 +247,10 @@ const ProgressPage = () => {
               <div className="bg-muted rounded-lg p-8 text-center my-6">
                 <p className="text-primary text-2xl font-display mb-3">"</p>
                 <p className="font-editorial italic text-lg sm:text-xl leading-relaxed max-w-md mx-auto text-foreground/80">
-                  "{quote.text}"
+                  "{quote?.text}"
                 </p>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-4">
-                  — {quote.source}
+                  — {quote?.source}
                 </p>
               </div>
             </div>

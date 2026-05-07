@@ -53,14 +53,14 @@ export const useBenches = () => {
 
       if (error) throw error;
 
-      return (data || []).map((bench: any) => ({
+      return (data || []).map((bench) => ({
         ...bench,
         // The migration script stored the bench number in the 'id' field
         // for official benches.
         number: bench.id,
-        colors: bench.bench_colors
-          ?.sort((a: any, b: any) => a.sort_order - b.sort_order)
-          .map((c: any) => c.color_hex) || []
+        colors: (bench.bench_colors as { color_hex: string; sort_order: number }[] | undefined)
+          ?.sort((a, b) => a.sort_order - b.sort_order)
+          .map((c) => c.color_hex) || []
       })) as Bench[];
     },
   });
@@ -95,9 +95,9 @@ export const useBench = (id: string | undefined) => {
       return {
         ...benchData,
         number: benchData.id,
-        colors: (benchData.bench_colors || [])
-          .sort((a: any, b: any) => a.sort_order - b.sort_order)
-          .map((c: any) => c.color_hex),
+        colors: ((benchData.bench_colors || []) as { color_hex: string; sort_order: number }[])
+          .sort((a, b) => a.sort_order - b.sort_order)
+          .map((c) => c.color_hex),
         stamp_locations: (benchData.stamp_locations || [])
       } as Bench;
     },
