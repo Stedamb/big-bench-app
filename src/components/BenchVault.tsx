@@ -1,5 +1,4 @@
 import * as React from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { X, MapPin, Camera, Check, ExternalLink } from "lucide-react";
@@ -37,16 +36,8 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
           <X className="w-4 h-4" />
         </button>
 
-        <AnimatePresence mode="wait">
-          {bench && (
-            <motion.div
-              key={bench.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="overflow-y-auto flex-1 min-h-0 px-5 sm:px-8 pb-8 pt-4"
-            >
+        {bench && (
+            <div>
               <div className="max-w-2xl mx-auto flex flex-col gap-6 sm:gap-8">
 
                 {/* Color accent bar */}
@@ -145,9 +136,8 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
       </DrawerContent>
     </Drawer>
   );
