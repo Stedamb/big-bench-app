@@ -1,10 +1,11 @@
 import * as React from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { X, MapPin, Camera, Check, ExternalLink } from "lucide-react";
+import { X, MapPin, Camera, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { parseLocalDate } from "@/lib/utils";
 import type { Bench } from "@/hooks/useBenches";
+import VisitedButton from "@/components/VisitedButton";
 
 interface BenchVaultProps {
   bench: Bench | null;
@@ -123,15 +124,7 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                       >
                         Esplora <ExternalLink className="w-4 h-4" />
                       </Button>
-                      <Button
-                        size="lg"
-                        variant={visited ? "secondary" : "outline"}
-                        className="w-full"
-                        onClick={onToggleVisited}
-                      >
-                        <Check className="w-4 h-4" />
-                        {visited ? "Visitata" : "Segna visitata"}
-                      </Button>
+                      <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="w-full" />
                     </div>
                   </div>
                 </div>
