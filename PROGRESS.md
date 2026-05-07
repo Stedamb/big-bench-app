@@ -18,12 +18,15 @@ Transformed the community features into a social **Guestbook** system and resolv
 
 ### 2. Map & Performance Stabilization
 - **Hook Order Fix**: Resolved a critical React crash in `ProgressTracker.tsx` caused by a "Rules of Hooks" violation. Refactored the component to receive data as props from the parent `Index` page.
+- **State Atomicity**: Fixed race conditions in `useVisitedBenches` by implementing functional state updates, ensuring that rapid clicks on "visited" toggles are handled correctly without reading stale state.
 - **Type Safety**: Eliminated multiple `any` casts in hooks and components, replacing them with strict `Bench` and `GuestbookPost` interfaces.
 - **Improved UX**: Simplified the Guestbook feed by removing unrequested proximity filters and "Coming Soon" buttons, focusing on high-signal user content.
+- **SVG Reliability**: Fixed a bug where bench icons on the map would lose their color gradients in Safari/Firefox due to ID collisions. Added unique IDs based on bench ID and colors.
 
 ## 🛠 Technical Notes for Next Agent
-- **One-Review Constraint**: Attempting to post a second review for the same bench will now return a 23505 Postgres error, which is caught and handled with a user-friendly toast message.
+- **One-Review Constraint**: Attempting to post a second review for the same bench will now return a 23505 Postgres error, which is caught and handled with a user-friendly toast message. This is a composite unique constraint on `(user_id, bench_id)`.
 - **Guestbook Hook**: `useGuestbook` replaces `useCommunityPosts`. It handles the complex multi-image upload flow and invalidates relevant queries on success.
+- **Auth Context**: Optimized `AuthContext` to remove redundant session fetching on mount, relying on the synchronous INITIAL_SESSION event from Supabase v2.
 - **Sidebar Integration**: Stamp locations remain in the sidebar of the detail page with enhanced typography.
 
 ## 📋 Remaining Tasks
