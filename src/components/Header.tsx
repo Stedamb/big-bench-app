@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import NavMenu from "@/components/NavMenu";
 
 const Header = () => {
   const location = useLocation();
@@ -50,87 +51,90 @@ const Header = () => {
         </Link>
 
         <nav className="flex items-center gap-2 sm:gap-8">
+          {/* Desktop nav links — hidden on mobile */}
           <Link
             to="/"
-            className={`text-[10px] sm:text-sm font-black uppercase tracking-widest transition-colors hover:text-primary ${
+            className={`hidden sm:flex text-sm font-black uppercase tracking-widest transition-colors hover:text-primary items-center gap-1 ${
               isHome ? "text-primary" : "text-black"
             }`}
           >
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Mappa</span>
-            </span>
+            <MapPin className="w-4 h-4" />
+            Mappa
           </Link>
           <Link
             to="/guestbook"
-            className={`text-[10px] sm:text-sm font-black uppercase tracking-widest transition-colors hover:text-primary ${
+            className={`hidden sm:block text-sm font-black uppercase tracking-widest transition-colors hover:text-primary ${
               location.pathname === "/guestbook" ? "text-primary" : "text-black"
             }`}
           >
-            <span className="hidden sm:inline">Guestbook</span>
-            <span className="sm:hidden">Guest.</span>
+            Guestbook
           </Link>
           <Link
             to="/progress"
-            className={`text-[10px] sm:text-sm font-black uppercase tracking-widest transition-colors hover:text-primary ${
+            className={`hidden sm:block text-sm font-black uppercase tracking-widest transition-colors hover:text-primary ${
               location.pathname === "/progress" ? "text-primary" : "text-black"
             }`}
           >
-            <span className="hidden sm:inline">Passaporto</span>
-            <span className="sm:hidden">Pass.</span>
+            Passaporto
           </Link>
 
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage
-                      src={user.user_metadata?.avatar_url}
-                      alt="Avatar"
-                    />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 z-[1100]">
-                <DropdownMenuLabel className="font-editorial">
-                  <p className="font-display font-bold text-sm truncate">
-                    {user.user_metadata?.display_name || "Utente"}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate font-normal">
-                    {user.email}
-                  </p>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/settings")}>
-                  <SettingsIcon className="w-4 h-4 mr-2" />
-                  Impostazioni
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate("/progress")}>
-                  <UserIcon className="w-4 h-4 mr-2" />
-                  Il mio passaporto
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Esci
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button
-              size="sm"
-              variant="default"
-              onClick={() => navigate("/auth")}
-              className="gap-1.5 h-8"
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              Accedi
-            </Button>
-          )}
+          {/* Desktop: user avatar / login */}
+          <div className="hidden sm:block">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage
+                        src={user.user_metadata?.avatar_url}
+                        alt="Avatar"
+                      />
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs font-bold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56 z-[1100]">
+                  <DropdownMenuLabel className="font-editorial">
+                    <p className="font-display font-bold text-sm truncate">
+                      {user.user_metadata?.display_name || "Utente"}
+                    </p>
+                    <p className="text-xs text-muted-foreground truncate font-normal">
+                      {user.email}
+                    </p>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/settings")}>
+                    <SettingsIcon className="w-4 h-4 mr-2" />
+                    Impostazioni
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/progress")}>
+                    <UserIcon className="w-4 h-4 mr-2" />
+                    Il mio passaporto
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Esci
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                size="sm"
+                variant="default"
+                onClick={() => navigate("/auth")}
+                className="gap-1.5 h-8"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                Accedi
+              </Button>
+            )}
+          </div>
+
+          {/* Hamburger — visible on all sizes, replaces everything on mobile */}
+          <NavMenu />
         </nav>
       </div>
 
