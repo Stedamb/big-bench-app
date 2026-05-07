@@ -75,9 +75,6 @@ const Index = () => {
             selectedRegion={selectedRegion}
             onRegionChange={(r) => {
               setSelectedRegion(r);
-              if (r !== "all") {
-                setSelectedCountry("Italy");
-              }
             }}
             countries={countries}
             regions={regions}
