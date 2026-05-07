@@ -158,7 +158,7 @@ function ViewportFilteredMarkers({ benches, visitedIds, onToggleVisited, onSelec
   );
 
   return (
-    <MarkerClusterGroup chunkedLoading disableClusteringAtZoom={16}>
+    <MarkerClusterGroup chunkedLoading disableClusteringAtZoom={9}>
       {visibleBenches.map((bench) => (
         <Marker
           key={bench.id}
