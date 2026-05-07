@@ -133,7 +133,8 @@ const Header = () => {
             )}
           </div>
 
-          {/* Hamburger — visible on all sizes, replaces everything on mobile */}
+          {/* Hamburger — visible only on mobile */}
+          
           <NavMenu />
         </nav>
       </div>

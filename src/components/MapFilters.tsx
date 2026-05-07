@@ -52,7 +52,7 @@ const MapFilters = ({
   const hasSearch = searchQuery.length > 0;
 
   return (
-    <div className="flex items-center gap-1 sm:gap-2 bg-white p-1.5 sm:p-2 rounded-none border-2 sm:border-4 border-black shadow-neo w-full max-w-2xl">
+    <div className="flex items-center gap-1 sm:gap-2 bg-white p-1.5 sm:p-2 rounded-none border-2 sm:border-4 border-black shadow-neo w-full max-w-sm sm:max-w-md">
       <div className="relative flex-1 flex items-center">
         <Search className="absolute left-2 sm:left-3 w-4 h-4 sm:w-5 sm:h-5 text-black" />
         <Input

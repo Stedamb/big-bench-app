@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBench } from "@/hooks/useBenches";
+import VisitedButton from "@/components/VisitedButton";
 import { useGuestbook } from "@/hooks/useGuestbook";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -444,14 +445,7 @@ const BenchDetailPage = () => {
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
           {/* Visit action */}
           <div className="border border-border rounded-md p-5 bg-card">
-            <Button
-              className="w-full gap-2 h-11"
-              variant={visited ? "secondary" : "default"}
-              onClick={() => toggleVisited(bench.id)}
-            >
-              <Check className="w-4 h-4" />
-              {visited ? "✓ Panchina visitata" : "Segna come visitata"}
-            </Button>
+            <VisitedButton visited={visited} onToggleVisited={() => toggleVisited(bench.id)} className="w-full gap-2 h-11" />
           </div>
 
           {/* Stats */}

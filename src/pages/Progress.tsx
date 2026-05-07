@@ -1,23 +1,12 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Check, Lock, ArrowLeft, Loader2 } from "lucide-react";
+import { Check, ArrowLeft, Loader2, MapPin, ExternalLink } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { useMemo } from "react";
-import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches } from "@/hooks/useBenches";
-
-const quotes = [
-  {
-    text: "Distance is not just a measure of space, but of the clarity one finds in the silence of the high plains.",
-    source: "From the Editor's Note, Vol. III"
-  },
-  {
-    text: "Every bench is a window to a world we forgot to notice.",
-    source: "Big Bench Community"
-  },
-];
 
 const getExplorerGrade = (percentage: number) => {
   if (percentage >= 80) return "Master Explorer";
@@ -27,49 +16,63 @@ const getExplorerGrade = (percentage: number) => {
   return "Newcomer";
 };
 
+// Deterministic shuffle seeded by sum of IDs — stable across renders for the same data set
+function deterministicShuffle<T extends { id: number }>(arr: T[]): T[] {
+  const copy = [...arr];
+  let seed = copy.reduce((s, b) => s + b.id, 0) || 1;
+  for (let i = copy.length - 1; i > 0; i--) {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    const j = seed % (i + 1);
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 const ProgressPage = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
   const { data: benches = [], isLoading } = useBenches();
 
-  const total = benches.length;
-  const benchIds = new Set(benches.map(b => b.id));
-  const visitedCount = visitedIds.filter(id => benchIds.has(id)).length;
-  const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
-
-  // Use a Set for O(1) lookups instead of O(n) Array.includes() inside filter loops
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
 
-  const regionsVisited = useMemo(() =>
-    new Set(benches.filter(b => visitedSet.has(b.id)).map(b => b.region)).size,
+  const visitedBenches = useMemo(
+    () => benches.filter(b => visitedSet.has(b.id)),
     [benches, visitedSet]
   );
-  const totalRegions = useMemo(() =>
-    new Set(benches.map(b => b.region)).size,
+  const unvisitedBenches = useMemo(
+    () => benches.filter(b => !visitedSet.has(b.id)),
+    [benches, visitedSet]
+  );
+
+  const total = benches.length;
+  const visitedCount = visitedBenches.length;
+  const percentage = total > 0 ? Math.round((visitedCount / total) * 100) : 0;
+
+  const regionsVisited = useMemo(
+    () => new Set(visitedBenches.map(b => b.region)).size,
+    [visitedBenches]
+  );
+  const totalRegions = useMemo(
+    () => new Set(benches.map(b => b.region)).size,
+    [benches]
+  );
+  const countriesVisited = useMemo(
+    () => new Set(visitedBenches.map(b => b.country)).size,
+    [visitedBenches]
+  );
+  const allCountries = useMemo(
+    () => Array.from(new Set(benches.map(b => b.country))).sort(),
     [benches]
   );
 
-  // Total altitude of visited benches
-  const totalAltitude = useMemo(() =>
-    benches.filter(b => visitedSet.has(b.id)).reduce((sum, b) => sum + (b.altitude_m || 0), 0),
-    [benches, visitedSet]
+  // Shuffled unvisited: first 2 go as "preview" in the badge section, rest go in todo list
+  const shuffledUnvisited = useMemo(
+    () => deterministicShuffle(unvisitedBenches),
+    [unvisitedBenches]
   );
+  const previewUnvisited = shuffledUnvisited.slice(0, 2);
+  const todoList = shuffledUnvisited.slice(2, 10);
 
-  // Recent visits (last 3 visited)
-  const recentVisits = useMemo(() =>
-    benches.filter(b => visitedSet.has(b.id)).slice(-3),
-    [benches, visitedSet]
-  );
-
-  // Featured bench (first unvisited or first overall)
-  const unvisited = useMemo(() =>
-    benches.filter(b => !visitedSet.has(b.id)),
-    [benches, visitedSet]
-  );
-  const featured = unvisited.length > 0 ? unvisited[0] : benches[0];
-  const featuredColor = featured?.colors?.[0] || "#C4572A";
-
-  const currentDate = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  const quote = quotes.length > 0 ? (quotes[visitedCount % quotes.length] ?? quotes[0]) : undefined;
+  const currentDate = new Date().toLocaleDateString("it-IT", { month: "long", year: "numeric" });
 
   if (isLoading) {
     return (
@@ -86,173 +89,244 @@ const ProgressPage = () => {
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className="flex-1">
-        {/* Hero section */}
         <div className="container max-w-4xl py-8 sm:py-12">
+
           {/* Back link */}
-          <Link to="/" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors mb-6 uppercase tracking-widest">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1 text-xs text-black/40 hover:text-primary transition-colors mb-6 font-black uppercase tracking-widest"
+          >
             <ArrowLeft className="w-3 h-3" />
-            Personal Archive Vol. IV
+            Torna alla mappa
           </Link>
 
-          {/* Title area */}
+          {/* Title */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-6">
             <div>
               <h1 className="text-4xl sm:text-6xl leading-none mb-1">
-                Passport &<br />
-                <span className="font-editorial italic font-normal">Progress</span>
+                Il tuo<br />
+                <span className="font-editorial italic font-normal">Passaporto</span>
               </h1>
-              <p className="text-sm text-muted-foreground font-editorial mt-3 max-w-sm">
-                A curated record of your high-altitude discoveries. Every stamp tells a story of the horizon reached and the stillness found.
+              <p className="text-sm text-black/50 font-editorial mt-3 max-w-sm">
+                Il registro delle tue scoperte. Ogni timbro è una storia raggiunta.
               </p>
             </div>
-            <div className="mt-4 sm:mt-0 text-right">
-              <p className="text-sm text-muted-foreground">{currentDate}</p>
-              <p className="text-sm font-display font-bold text-primary mt-1">{getExplorerGrade(percentage)}</p>
+            <div className="mt-4 sm:mt-0 text-right sm:text-right">
+              <p className="text-xs text-black/40 font-bold uppercase tracking-widest capitalize">{currentDate}</p>
+              <p className="font-black text-base uppercase tracking-widest text-primary mt-1">
+                {getExplorerGrade(percentage)}
+              </p>
             </div>
           </div>
 
           <div className="editorial-rule-thick mb-8" />
 
-          {/* Two column layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            {/* Left column */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* The Ledger */}
-              <div className="bg-card border border-border rounded-lg p-5 shadow-[var(--shadow-editorial)]">
-                <h3 className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-4 font-medium">The Ledger</h3>
-                
-                <div className="space-y-4">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Total Altitude Traversed</p>
-                      <p className="text-3xl font-display font-bold leading-none mt-1">
-                        {(totalAltitude / 1000).toFixed(1)} <span className="text-base font-normal text-muted-foreground">km</span>
-                      </p>
-                    </div>
-                    <div className="flex gap-0.5">
-                      {[...Array(Math.min(visitedCount, 8))].map((_, i) => (
-                        <div key={i} className="w-2 h-6 bg-primary rounded-sm" style={{ height: `${12 + i * 3}px` }} />
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="editorial-rule" />
-
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Benches Discovered</p>
-                      <p className="text-3xl font-display font-bold leading-none mt-1">
-                        {visitedCount} <span className="text-base font-normal text-muted-foreground">sites</span>
-                      </p>
-                    </div>
-                    <p className="text-xs text-muted-foreground">+{Math.min(visitedCount, 3)} this month</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Featured bench card */}
-              {featured && (
-                <div className="relative rounded-lg overflow-hidden border border-border shadow-[var(--shadow-card)]">
-                  <div className="absolute top-3 left-3 z-10">
-                    <span className="text-[9px] uppercase tracking-[0.2em] bg-card/90 px-2 py-1 rounded-sm font-medium">
-                      Safe for Work
-                    </span>
-                  </div>
-                  <div className="bg-muted aspect-[4/3] flex items-center justify-center">
-                    <div className="text-center p-6">
-                      <div
-                        className="w-16 h-16 rounded-sm mx-auto mb-3 flex items-center justify-center text-xl font-bold"
-                        style={{ backgroundColor: featuredColor, color: "#fff" }}
-                      >
-                        #{featured.number}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-card">
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-muted-foreground mb-1">The Next Expedition</p>
-                    <h3 className="font-display text-lg font-bold leading-tight">
-                      {featured.name.replace("Panchina ", "")}:<br />
-                      <span className="font-editorial italic font-normal">The Horizon</span>
-                    </h3>
-                    <p className="text-xs text-muted-foreground font-editorial mt-2 line-clamp-2">
-                      {featured.description || "Questa panchina gigante invita i visitatori a fermarsi, sedersi e tornare bambini."}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground mt-2 uppercase tracking-wider">
-                      Difficulty: Moderate · {featured.region}
-                    </p>
-                  </div>
-                </div>
-              )}
+          {/* ── Stats row ── */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+            <div className="border-2 sm:border-4 border-black p-3 sm:p-4 bg-white shadow-neo">
+              <p className="text-[9px] font-black uppercase tracking-widest text-black/40 mb-1">Visitate</p>
+              <p className="text-3xl sm:text-4xl font-black leading-none">{visitedCount}</p>
+              <p className="text-[9px] font-bold text-black/30 mt-1">su {total}</p>
             </div>
+            <div className="border-2 sm:border-4 border-black p-3 sm:p-4 bg-white shadow-neo">
+              <p className="text-[9px] font-black uppercase tracking-widest text-black/40 mb-1">Completamento</p>
+              <p className="text-3xl sm:text-4xl font-black leading-none">
+                {percentage}<span className="text-base font-bold">%</span>
+              </p>
+              <div className="mt-2">
+                <Progress value={percentage} className="h-1.5" />
+              </div>
+            </div>
+            <div className="border-2 sm:border-4 border-black p-3 sm:p-4 bg-white shadow-neo">
+              <p className="text-[9px] font-black uppercase tracking-widest text-black/40 mb-1">Regioni</p>
+              <p className="text-3xl sm:text-4xl font-black leading-none">{regionsVisited}</p>
+              <p className="text-[9px] font-bold text-black/30 mt-1">su {totalRegions}</p>
+            </div>
+            <div className="border-2 sm:border-4 border-black p-3 sm:p-4 bg-white shadow-neo">
+              <p className="text-[9px] font-black uppercase tracking-widest text-black/40 mb-1">Paesi</p>
+              <p className="text-3xl sm:text-4xl font-black leading-none">{countriesVisited || 0}</p>
+              <p className="text-[9px] font-bold text-black/30 mt-1">esplorati</p>
+            </div>
+          </div>
 
-            {/* Right column */}
-            <div className="lg:col-span-3 space-y-6">
-              {/* The Stamp Collection */}
-              <div>
+          {/* ── Two-column layout ── */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+            {/* ── Left: stamp collection + todo list ── */}
+            <div className="lg:col-span-3 space-y-10">
+
+              {/* Stamp collection */}
+              <section>
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="font-display text-xl font-bold">
-                    The <span className="font-editorial italic font-normal">Stamp</span> Collection
+                  <h3 className="font-display text-xl font-bold uppercase">
+                    Timbri Collezionati
                   </h3>
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                    Portfolio · Recent Passports
-                  </p>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-black/30">
+                    {visitedCount} / {total}
+                  </span>
                 </div>
                 <div className="editorial-rule mb-5" />
 
-                <div className="grid grid-cols-3 gap-4">
-                  {benches.slice(0, 12).map((bench) => {
-                    const isVisited = visitedIds.includes(bench.id);
-                    const bColor = bench.colors?.[0] || "#C4572A";
-                    return (
-                      <div
+                {visitedCount === 0 ? (
+                  <div className="border-2 border-dashed border-black/20 p-8 text-center">
+                    <p className="text-sm text-black/40 font-editorial italic">
+                      Non hai ancora visitato nessuna panchina.<br />
+                      Vai sulla mappa e inizia la tua avventura!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {/* Visited — colored badges */}
+                    {visitedBenches.map((bench) => {
+                      const bColor = bench.colors?.[0] || "#C4572A";
+                      return (
+                        <Link key={bench.id} to={`/bench/${bench.id}`}>
+                          <Badge
+                            variant="outline"
+                            className="gap-1 cursor-pointer hover:opacity-80 transition-opacity"
+                            style={{ backgroundColor: bColor, borderColor: bColor, color: "#fff" }}
+                          >
+                            <Check className="w-3 h-3" />
+                            #{bench.number} {bench.name}
+                          </Badge>
+                        </Link>
+                      );
+                    })}
+
+                    {/* 2 random unvisited — dimmed outline */}
+                    {previewUnvisited.map((bench) => (
+                      <Badge
                         key={bench.id}
-                        className="text-center cursor-pointer group"
-                        onClick={() => toggleVisited(bench.id)}
+                        variant="outline"
+                        className="opacity-25 cursor-default select-none"
                       >
-                        {/* Stamp circle */}
-                        <div className={`
-                          w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2
-                          flex items-center justify-center
-                          border-2 transition-all duration-300
-                          ${isVisited
-                            ? "border-transparent shadow-[var(--shadow-card)]"
-                            : "border-dashed border-border opacity-50 group-hover:opacity-80"
-                          }
-                        `}
-                        style={isVisited ? { backgroundColor: `${bColor}20`, borderColor: bColor } : {}}
+                        #{bench.number} {bench.name}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              {/* Todo list */}
+              <section>
+                <div className="flex items-center justify-between mb-1">
+                  <h3 className="font-display text-xl font-bold uppercase">
+                    Da Visitare
+                  </h3>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-black/30">
+                    selezione casuale
+                  </span>
+                </div>
+                <div className="editorial-rule mb-5" />
+
+                {todoList.length === 0 ? (
+                  <div className="border-2 border-dashed border-black/20 p-8 text-center">
+                    <p className="text-sm text-black/40 font-editorial italic">
+                      Hai visitato tutte le panchine — complimenti!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {todoList.map((bench) => {
+                      const bColor = bench.colors?.[0] || "#C4572A";
+                      return (
+                        <div
+                          key={bench.id}
+                          className="flex items-center gap-3 border-2 border-black p-3 bg-white shadow-neo-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
                         >
-                          {isVisited ? (
-                            <Check className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: bColor }} />
-                          ) : (
-                            <Lock className="w-4 h-4 text-muted-foreground" />
-                          )}
+                          {/* Color swatch */}
+                          <div
+                            className="w-4 h-10 shrink-0 border-2 border-black"
+                            style={{ backgroundColor: bColor }}
+                          />
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-black text-sm leading-tight truncate">
+                              #{bench.number} {bench.name}
+                            </p>
+                            <p className="text-[10px] text-black/40 font-bold uppercase tracking-wider mt-0.5 flex items-center gap-1 truncate">
+                              <MapPin className="w-3 h-3 shrink-0" />
+                              {bench.location}{bench.region ? `, ${bench.region}` : ""}
+                            </p>
+                          </div>
+                          {/* Mark as visited */}
+                          <button
+                            onClick={() => toggleVisited(bench.id)}
+                            title="Segna come visitata"
+                            className="shrink-0 w-8 h-8 border-2 border-black bg-white flex items-center justify-center hover:bg-primary hover:text-primary-foreground transition-colors"
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          {/* Go to detail */}
+                          <Link
+                            to={`/bench/${bench.id}`}
+                            className="shrink-0 w-8 h-8 border-2 border-black bg-white flex items-center justify-center hover:bg-secondary transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </Link>
                         </div>
-                        {/* Date label */}
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">
-                          {isVisited && bench.installed_on ? parseLocalDate(bench.installed_on).getFullYear() : "—"}
-                        </p>
-                        {/* Name */}
-                        <p className={`text-xs font-editorial italic leading-tight ${
-                          isVisited ? "text-foreground" : "text-muted-foreground"
-                        }`}>
-                          {bench.name.replace("Panchina ", "").replace(" di ", " d'").split(" ").slice(0, 2).join(" ")}
-                        </p>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            </div>
+
+            {/* ── Right: progress bars + country breakdown ── */}
+            <div className="lg:col-span-2 space-y-6">
+
+              {/* Overall progress */}
+              <div className="border-2 sm:border-4 border-black p-5 bg-white shadow-neo space-y-5">
+                <h3 className="font-black text-xs uppercase tracking-widest">Il tuo percorso</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-wider mb-1.5">
+                      <span>Totale</span>
+                      <span>{visitedCount} / {total}</span>
+                    </div>
+                    <Progress value={percentage} className="h-3" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-[10px] font-black uppercase tracking-wider mb-1.5">
+                      <span>Regioni</span>
+                      <span>{regionsVisited} / {totalRegions}</span>
+                    </div>
+                    <Progress
+                      value={totalRegions > 0 ? (regionsVisited / totalRegions) * 100 : 0}
+                      className="h-3"
+                    />
+                  </div>
+                </div>
+                <div className="border-t-2 border-black pt-4">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-black/40 mb-1">
+                    Grado esploratore
+                  </p>
+                  <p className="font-black text-lg uppercase text-primary">
+                    {getExplorerGrade(percentage)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Per-country breakdown — only if there's more than one country */}
+              {allCountries.length > 1 && (
+                <div className="border-2 border-black p-5 bg-white shadow-neo-sm space-y-4">
+                  <h3 className="font-black text-xs uppercase tracking-widest">Per Paese</h3>
+                  {allCountries.map(country => {
+                    const totalC = benches.filter(b => b.country === country).length;
+                    const visitedC = visitedBenches.filter(b => b.country === country).length;
+                    return (
+                      <div key={country}>
+                        <div className="flex justify-between text-[10px] font-black uppercase tracking-wider mb-1.5">
+                          <span>{country}</span>
+                          <span>{visitedC} / {totalC}</span>
+                        </div>
+                        <Progress value={totalC > 0 ? (visitedC / totalC) * 100 : 0} className="h-2" />
                       </div>
                     );
                   })}
                 </div>
-              </div>
+              )}
 
-              {/* Quote block */}
-              <div className="bg-muted rounded-lg p-8 text-center my-6">
-                <p className="text-primary text-2xl font-display mb-3">"</p>
-                <p className="font-editorial italic text-lg sm:text-xl leading-relaxed max-w-md mx-auto text-foreground/80">
-                  "{quote?.text}"
-                </p>
-                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground mt-4">
-                  — {quote?.source}
-                </p>
-              </div>
             </div>
           </div>
         </div>

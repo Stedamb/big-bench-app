@@ -16,6 +16,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useHaptics } from "@/lib/haptics";
 
 const NAV_ITEMS = [
   { to: "/", label: "Mappa", icon: MapPin },
@@ -28,6 +29,7 @@ const NavMenu = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const { playHaptic } = useHaptics();
 
   const initials = (user?.user_metadata?.display_name || user?.email || "?")
     .slice(0, 2)
@@ -37,6 +39,7 @@ const NavMenu = () => {
     try {
       await signOut();
       setOpen(false);
+      playHaptic('medium');
       navigate("/");
     } catch {
       toast.error("Errore durante la disconnessione. Riprova.");
@@ -45,6 +48,7 @@ const NavMenu = () => {
 
   const handleNav = (to: string) => {
     setOpen(false);
+    playHaptic('medium');
     navigate(to);
   };
 
@@ -58,7 +62,8 @@ const NavMenu = () => {
       <Drawer.Trigger asChild>
         <button
           aria-label="Apri menu"
-          className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 border-2 border-black bg-white shadow-neo-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          onClick={() => playHaptic('light')}
+          className="flex items-center justify-center w-9 h-9 sm:hidden border-2 border-black bg-white shadow-neo-sm hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
         >
           <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
@@ -88,7 +93,10 @@ const NavMenu = () => {
               </span>
             </div>
             <button
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setOpen(false);
+                playHaptic('light');
+              }}
               aria-label="Chiudi menu"
               className="w-8 h-8 border-2 border-black bg-white shadow-neo-sm flex items-center justify-center hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
             >
