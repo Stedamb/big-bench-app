@@ -1,90 +1,99 @@
 /* ==========================================================================
    COLOR PALETTE — BigBenchApp Design Tokens
-   
-   Naming convention:
-   - Semantic names (primary, accent, muted) over descriptive ones
-   - HSL values without hsl() wrapper — Tailwind applies hsl() at usage
-   - Light theme is default (:root), dark theme overrides (.dark)
-   
-   Brand Colors:
-   - Primary:   Terracotta/Rust — the Big Bench signature warm red
-   - Accent:    Olive Green — nature-inspired secondary
-   - Neutral:   Warm Creams & Grays — editorial paper feel
+   Sober, warm, editorial. 1px lines. Mix of curved + square.
    ========================================================================== */
 
 :root {
-  /* ---- Surface Colors ---- */
-  --background:          36 60% 96%;   /* Warm cream — page background */
-  --foreground:          0 0% 0%;      /* Pure black for neobrutalism */
-  --card:                0 0% 100%;    /* Pure white */
-  --card-foreground:     0 0% 0%;
-  --popover:             0 0% 100%;
-  --popover-foreground:  0 0% 0%;
+  /* ---- Surfaces ---- */
+  --background:          38 25% 97%;    /* Warm off-white, like aged paper */
+  --foreground:          20  8%  8%;    /* Warm near-black */
+  --card:                 0  0% 100%;
+  --card-foreground:     20  8%  8%;
+  --popover:              0  0% 100%;
+  --popover-foreground:  20  8%  8%;
 
-  /* ---- Brand Colors ---- */
-  --primary:             14 80% 55%;   /* More vibrant terracotta */
-  --primary-foreground:  0 0% 100%;
-  --accent:              130 40% 45%;  /* More vibrant olive */
-  --accent-foreground:   0 0% 100%;
+  /* ---- Brand ---- */
+  --primary:             16 60% 46%;    /* Muted terracotta */
+  --primary-foreground:   0  0% 100%;
+  --accent:             145 28% 40%;    /* Muted sage green */
+  --accent-foreground:    0  0% 100%;
 
-  /* ---- Neutral Scale ---- */
-  --secondary:           0 0% 90%;
-  --secondary-foreground: 0 0% 0%;
-  --muted:               0 0% 96%;
-  --muted-foreground:    0 0% 20%;
+  /* ---- Neutrals ---- */
+  --secondary:           38 15% 93%;
+  --secondary-foreground: 20  8%  8%;
+  --muted:               38 10% 95%;
+  --muted-foreground:    20  6% 44%;
 
-  /* ---- Feedback Colors ---- */
-  --destructive:         0 100% 50%;
+  /* ---- Feedback ---- */
+  --destructive:          0 72% 51%;
   --destructive-foreground: 0 0% 100%;
 
-  /* ---- Border & Ring ---- */
-  --border:              0 0% 0%;      /* Black borders for neobrutalism */
-  --input:               0 0% 0%;
-  --ring:                0 0% 0%;
-  --radius:              0px;          /* Sharp corners for neobrutalism */
+  /* ---- Lines & Focus ---- */
+  --border:              30  8% 88%;    /* Warm light gray — 1px lines */
+  --input:               30  8% 88%;
+  --ring:                16 60% 46%;
 
-  /* ---- Sidebar Colors ---- */
-  --sidebar-background:         0 0% 98%;
-  --sidebar-foreground:         0 0% 0%;
-  --sidebar-primary:            14 80% 55%;
-  --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent:             0 0% 90%;
-  --sidebar-accent-foreground:  0 0% 0%;
-  --sidebar-border:             0 0% 0%;
-  --sidebar-ring:               0 0% 0%;
+  /* ---- Radius ---- */
+  --radius:              0.5rem;        /* 8px — base for rounded-lg */
+
+  /* ---- Editorial rules ---- */
+  --border-rule:         1px solid hsl(30 8% 82%);
+  --border-rule-thick:   1px solid hsl(20 8% 20% / 0.18);
+  --border-rule-double:  3px double hsl(30 8% 78%);
+
+  /* ---- Sidebar (unchanged) ---- */
+  --sidebar-background:         38 25% 97%;
+  --sidebar-foreground:         20  8%  8%;
+  --sidebar-primary:            16 60% 46%;
+  --sidebar-primary-foreground:  0  0% 100%;
+  --sidebar-accent:             38 15% 93%;
+  --sidebar-accent-foreground:  20  8%  8%;
+  --sidebar-border:             30  8% 88%;
+  --sidebar-ring:               16 60% 46%;
 }
 
 .dark {
-  /* Dark mode neobrutalism still uses high contrast */
-  --background:          0 0% 5%;
-  --foreground:          0 0% 100%;
-  --card:                0 0% 10%;
-  --card-foreground:     0 0% 100%;
-  --popover:             0 0% 10%;
-  --popover-foreground:  0 0% 100%;
+  /* ---- Surfaces ---- */
+  --background:          0  0%  5%;    /* Very dark warm */
+  --foreground:          38 12% 92%;    /* Warm off-white text */
+  --card:                20  6%  9%;
+  --card-foreground:     38 12% 92%;
+  --popover:             20  6%  9%;
+  --popover-foreground:  38 12% 92%;
 
-  --primary:             14 80% 60%;
-  --primary-foreground:  0 0% 0%;
-  --accent:              130 40% 50%;
-  --accent-foreground:   0 0% 0%;
+  /* ---- Brand ---- */
+  --primary:             16 62% 56%;    /* Slightly brighter in dark */
+  --primary-foreground:   0  0%  5%;
+  --accent:             145 30% 48%;
+  --accent-foreground:    0  0%  5%;
 
-  --secondary:           0 0% 20%;
-  --secondary-foreground: 0 0% 100%;
-  --muted:               0 0% 15%;
-  --muted-foreground:    0 0% 80%;
+  /* ---- Neutrals ---- */
+  --secondary:           20  5% 14%;
+  --secondary-foreground: 38 12% 88%;
+  --muted:               20  5% 12%;
+  --muted-foreground:    20  5% 52%;
 
-  --border:              0 0% 100%;
-  --input:               0 0% 100%;
-  --ring:                0 0% 100%;
+  /* ---- Feedback ---- */
+  --destructive:          0 65% 55%;
+  --destructive-foreground: 0 0% 100%;
 
-  /* Sidebar dark mode overrides */
-  --sidebar-background:         0 0% 10%;
-  --sidebar-foreground:         0 0% 100%;
-  --sidebar-primary:            14 80% 60%;
-  --sidebar-primary-foreground: 0 0% 0%;
-  --sidebar-accent:             0 0% 20%;
-  --sidebar-accent-foreground:  0 0% 100%;
-  --sidebar-border:             0 0% 100%;
-  --sidebar-ring:               0 0% 100%;
+  /* ---- Lines & Focus ---- */
+  --border:              20  5% 18%;    /* Dark warm gray */
+  --input:               20  5% 18%;
+  --ring:                16 62% 56%;
+
+  /* ---- Editorial rules ---- */
+  --border-rule:         1px solid hsl(20 5% 20%);
+  --border-rule-thick:   1px solid hsl(38 12% 92% / 0.12);
+  --border-rule-double:  3px double hsl(20 5% 22%);
+
+  /* ---- Sidebar ---- */
+  --sidebar-background:         20  6%  9%;
+  --sidebar-foreground:         38 12% 92%;
+  --sidebar-primary:            16 62% 56%;
+  --sidebar-primary-foreground:  0  0%  5%;
+  --sidebar-accent:             20  5% 14%;
+  --sidebar-accent-foreground:  38 12% 88%;
+  --sidebar-border:             20  5% 18%;
+  --sidebar-ring:               16 62% 56%;
 }
-
