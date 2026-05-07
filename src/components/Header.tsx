@@ -1,6 +1,6 @@
 import { LogIn, LogOut, MapPin, Mountain, Settings as SettingsIcon, User as UserIcon, Sun, Moon } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useTheme } from "next-themes";
+import { useThemeTransition } from "@/hooks/useThemeTransition";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ const Header = () => {
   const location = useLocation();
   const navigate  = useNavigate();
   const { user, signOut } = useAuth();
-  const { resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useThemeTransition();
   const isHome = location.pathname === "/";
 
   const handleSignOut = async () => {
