@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import Header from "@/components/Header";
 import BenchMap from "@/components/BenchMap";
 import ProgressTracker from "@/components/ProgressTracker";
-import BenchSidePanel from "@/components/BenchSidePanel";
+import BenchVault from "@/components/BenchVault";
 import MapFilters from "@/components/MapFilters";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches, type Bench } from "@/hooks/useBenches";
@@ -101,8 +101,8 @@ const Index = () => {
         )}
       </main>
 
-      {/* Bench side panel */}
-      <BenchSidePanel
+      {/* Bench vault (drawer) */}
+      <BenchVault
         bench={selectedBench}
         visited={selectedBench ? visitedSet.has(selectedBench.id) : false}
         onClose={() => setSelectedBench(null)}

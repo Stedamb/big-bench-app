@@ -52,71 +52,74 @@ const MapFilters = ({
   const hasSearch = searchQuery.length > 0;
 
   return (
-    <div className="flex items-center gap-2 bg-card/90 backdrop-blur-md p-1.5 rounded-full border border-border shadow-[var(--shadow-elevated)] w-full max-w-2xl">
+    <div className="flex items-center gap-1 sm:gap-2 bg-white p-1.5 sm:p-2 rounded-none border-2 sm:border-4 border-black shadow-neo w-full max-w-sm sm:max-w-md">
       <div className="relative flex-1 flex items-center">
-        <Search className="absolute left-3 w-4 h-4 text-muted-foreground" />
+        <Search className="absolute left-2 sm:left-3 w-4 h-4 sm:w-5 sm:h-5 text-black" />
         <Input
-          placeholder="Cerca panchina..."
+          placeholder="CERCA..."
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="pl-9 pr-8 h-9 border-none bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+          aria-label="Search locations"
+          className="pl-8 sm:pl-10 pr-6 sm:pr-8 h-8 sm:h-10 border-none bg-transparent shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-black/40 font-black uppercase tracking-tight sm:tracking-wider text-xs sm:text-base"
         />
         {hasSearch && (
           <button
             type="button"
             onClick={() => onSearchChange("")}
-            className="absolute right-2 p-1 hover:bg-muted rounded-full transition-colors"
+            className="absolute right-1 sm:right-2 p-1 hover:bg-secondary rounded-none transition-colors border-2 border-transparent hover:border-black"
             aria-label="Clear search"
           >
-            <X className="w-3 h-3 text-muted-foreground" />
+            <X className="w-3 h-3 sm:w-4 sm:h-4 text-black" />
           </button>
         )}
       </div>
 
-      <div className="flex items-center gap-1.5 px-1.5">
+      <div className="flex items-center gap-1 sm:gap-2 px-1 border-l-2 sm:border-l-4 border-black">
         <Popover>
           <PopoverTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="h-9 rounded-full gap-2 border-border/50 bg-background/50"
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-8 sm:h-10 rounded-none gap-1 sm:gap-2 border-2 border-black bg-white shadow-neo-sm hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none px-2 sm:px-4"
+              aria-label={activeFiltersCount > 0 ? `Filtri (${activeFiltersCount} attivi)` : "Filtri"}
             >
-              <Filter className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Filtri</span>
+              <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline uppercase font-black tracking-tight">Filtri</span>
+              <span className="sr-only sm:hidden">Filtri</span>
               {activeFiltersCount > 0 && (
-                <Badge variant="default" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full text-[10px]">
+                <Badge variant="default" className="h-4 w-4 sm:h-6 sm:w-6 p-0 flex items-center justify-center rounded-none shadow-none border-2 border-black text-[8px] sm:text-xs font-black" aria-hidden="true">
                   {activeFiltersCount}
                 </Badge>
               )}
-              <ChevronDown className="w-3 h-3 opacity-50" />
+              <ChevronDown className="w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-72 p-4" align="end">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="font-display font-bold text-sm">Filtra Risultati</h4>
+          <PopoverContent className="w-80 p-6 rounded-none border-4 border-black shadow-neo" align="end">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b-2 border-black pb-2">
+                <h4 className="font-display font-black text-xl uppercase italic">Filtra</h4>
                 {(activeFiltersCount > 0 || hasSearch) && (
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={clearFilters}
-                    className="h-7 px-2 text-[10px] uppercase tracking-wider"
+                    className="h-8 px-2 text-[10px] font-black uppercase tracking-widest border-2 border-transparent hover:border-black"
                   >
                     Reset
                   </Button>
                 )}
               </div>
               
-              <div className="space-y-3">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-widest font-black text-black">
                     Nazione
                   </label>
                   <Select value={selectedCountry} onValueChange={onCountryChange}>
-                    <SelectTrigger className="h-9 bg-muted/50 border-border/50">
+                    <SelectTrigger className="h-10 rounded-none border-2 border-black bg-white font-bold uppercase">
                       <SelectValue placeholder="Tutte le nazioni" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-none border-2 border-black shadow-neo-sm">
                       <SelectItem value="all">Tutte le nazioni</SelectItem>
                       {countries.map((c) => (
                         <SelectItem key={c} value={c}>{c}</SelectItem>
@@ -125,15 +128,15 @@ const MapFilters = ({
                   </Select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground ml-1">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-widest font-black text-black">
                     Regione
                   </label>
                   <Select value={selectedRegion} onValueChange={onRegionChange}>
-                    <SelectTrigger className="h-9 bg-muted/50 border-border/50">
+                    <SelectTrigger className="h-10 rounded-none border-2 border-black bg-white font-bold uppercase">
                       <SelectValue placeholder="Tutte le regioni" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="rounded-none border-2 border-black shadow-neo-sm">
                       <SelectItem value="all">Tutte le regioni</SelectItem>
                       {regions.map((r) => (
                         <SelectItem key={r} value={r}>{translateRegion(r)}</SelectItem>
@@ -143,9 +146,9 @@ const MapFilters = ({
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-border mt-2">
-                <p className="text-[10px] uppercase tracking-widest text-center text-muted-foreground font-bold">
-                  {totalResults} Risultati trovati
+              <div className="pt-4 border-t-2 border-black mt-2">
+                <p className="text-xs uppercase tracking-widest text-center text-black font-black">
+                  {totalResults} Risultati
                 </p>
               </div>
             </div>
