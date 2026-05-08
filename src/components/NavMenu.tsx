@@ -100,7 +100,7 @@ const NavMenu = () => {
           <div className="border-t border-border px-3 py-4 flex flex-col gap-1">
             {/* Theme toggle */}
             <button
-              onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+              onClick={() => { setTheme(resolvedTheme === "dark" ? "light" : "dark"); setOpen(false); }}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-150 w-full"
             >
               {resolvedTheme === "dark"
