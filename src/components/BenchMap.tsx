@@ -7,6 +7,7 @@ import MarkerClusterGroup from "react-leaflet-cluster";
 import "react-leaflet-cluster/lib/assets/MarkerCluster.css";
 import "react-leaflet-cluster/lib/assets/MarkerCluster.Default.css";
 import { Crosshair } from "lucide-react";
+import { toast } from "sonner";
 import { type Bench } from "@/hooks/useBenches";
 import BenchPopup from "./BenchPopup";
 
@@ -177,7 +178,16 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
         setLocating(false);
         mapRef.current?.flyTo(latlng, 13, { duration: 1.5 });
       },
-      () => setLocating(false),
+      (err) => {
+        setLocating(false);
+        const msg =
+          err.code === err.PERMISSION_DENIED
+            ? "Posizione non disponibile: permesso negato"
+            : err.code === err.TIMEOUT
+              ? "Posizione non disponibile: richiesta scaduta"
+              : "Posizione non disponibile: errore sconosciuto";
+        toast.error(msg);
+      },
       { enableHighAccuracy: false, timeout: 10000 },
     );
   }, [locating]);
@@ -197,7 +207,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
         <button
           onClick={handleLocate}
           disabled={locating}
-          className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-gray-100 transition-colors disabled:opacity-50"
+          className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-muted transition-colors disabled:opacity-50"
           aria-label="Trova la mia posizione"
         >
           {locating ? (

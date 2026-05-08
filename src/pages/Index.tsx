@@ -99,7 +99,7 @@ const Index = () => {
             <div className="flex justify-end">
               <button
                 onClick={() => benchMapRef.current?.locate()}
-                className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-gray-100 transition-colors"
+                className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-muted transition-colors"
                 aria-label="Trova la mia posizione"
               >
                 <Crosshair className="text-foreground" size={18} />
