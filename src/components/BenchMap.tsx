@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from "react-leaflet";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { useTheme } from "next-themes";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import MarkerClusterGroup from "react-leaflet-cluster";
 import "react-leaflet-cluster/lib/assets/MarkerCluster.css";
 import "react-leaflet-cluster/lib/assets/MarkerCluster.Default.css";
-import { useTheme } from "next-themes";
+import { Crosshair } from "lucide-react";
 import { type Bench } from "@/hooks/useBenches";
 import BenchPopup from "./BenchPopup";
 
@@ -65,16 +66,24 @@ const locationIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
-function ThemeAwareTileLayer() {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
+function DarkTileLayer() {
   return (
     <TileLayer
-      key={isDark ? "dark" : "light"}
-      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      className={isDark ? "map-tiles-dark" : ""}
+      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+      subdomains="abcd"
+      maxZoom={20}
+    />
+  );
+}
+
+function LightTileLayer() {
+  return (
+    <TileLayer
+      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+      subdomains="abcd"
+      maxZoom={20}
     />
   );
 }
@@ -90,33 +99,16 @@ function FitBounds({ benches }: { benches: Bench[] }) {
   return null;
 }
 
-/** Requests geolocation, shows a "you are here" marker, and flies to the user's position. */
-function UserLocation() {
+/** Stores the Leaflet map instance in a ref so the outer component can access it. */
+function StoreMapRef({ mapRef }: { mapRef: React.MutableRefObject<L.Map | null> }) {
   const map = useMap();
-  const [position, setPosition] = useState<L.LatLng | null>(null);
-  const hasFlownRef = useRef(false);
+  useEffect(() => { mapRef.current = map; }, [map, mapRef]);
+  return null;
+}
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
-        setPosition(latlng);
-        if (!hasFlownRef.current) {
-          hasFlownRef.current = true;
-          map.flyTo(latlng, 13, { duration: 1.5 });
-        }
-      },
-      () => {
-        // Silently ignore denied / unavailable geolocation
-      },
-      { enableHighAccuracy: false, timeout: 10000 },
-    );
-  }, [map]);
-
+/** Shows a "you are here" marker when the user has manually located themselves. */
+function UserMarker({ position }: { position: L.LatLng | null }) {
   if (!position) return null;
-
   return (
     <Marker position={position} icon={locationIcon}>
       <Popup>La tua posizione</Popup>
@@ -131,35 +123,12 @@ interface BenchMarkersProps {
   onSelectBench: (bench: Bench) => void;
 }
 
-/**
- * Renders only markers whose coordinates fall within the current map viewport
- * (padded by 50% to avoid pop-in at edges), wrapped in a cluster group so that
- * nearby markers merge into a single cluster circle on mobile zoom levels.
- */
-function ViewportFilteredMarkers({ benches, visitedIds, onToggleVisited, onSelectBench }: BenchMarkersProps) {
-  const map = useMap();
-
-  const [paddedBounds, setPaddedBounds] = useState<L.LatLngBounds>(() =>
-    map.getBounds().pad(0.5),
-  );
-
-  useMapEvents({
-    moveend() { setPaddedBounds(map.getBounds().pad(0.5)); },
-    zoomend() { setPaddedBounds(map.getBounds().pad(0.5)); },
-  });
-
-  // O(1) visited lookup
+function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench }: BenchMarkersProps) {
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
-
-  // Only pass benches that are within the extended viewport to the cluster group
-  const visibleBenches = useMemo(
-    () => benches.filter(b => paddedBounds.contains([b.lat, b.lng])),
-    [benches, paddedBounds],
-  );
 
   return (
     <MarkerClusterGroup chunkedLoading disableClusteringAtZoom={9}>
-      {visibleBenches.map((bench) => (
+      {benches.map((bench) => (
         <Marker
           key={bench.id}
           position={[bench.lat, bench.lng]}
@@ -188,25 +157,85 @@ interface BenchMapProps {
 }
 
 const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench }: BenchMapProps) => {
+  const { resolvedTheme } = useTheme();
+  const mapRef = useRef<L.Map | null>(null);
+  const [userPosition, setUserPosition] = useState<L.LatLng | null>(null);
+  const [locating, setLocating] = useState(false);
+
+  const handleLocate = useCallback(() => {
+    if (!navigator.geolocation || !mapRef.current || locating) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const latlng = L.latLng(pos.coords.latitude, pos.coords.longitude);
+        setUserPosition(latlng);
+        setLocating(false);
+        mapRef.current?.flyTo(latlng, 13, { duration: 1.5 });
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: false, timeout: 10000 },
+    );
+  }, [locating]);
+
   return (
     <div className="relative w-full h-full">
+      {/* Desktop: loading indicator + GPS button top-right */}
+      <div className="absolute top-4 right-4 z-[1001] hidden lg:flex items-center gap-2">
+        {isLoading && (
+          <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-medium text-muted-foreground">Aggiornamento...</span>
+          </div>
+        )}
+        <button
+          onClick={handleLocate}
+          disabled={locating}
+          className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-gray-100 transition-colors disabled:opacity-50"
+          aria-label="Trova la mia posizione"
+        >
+          {locating ? (
+            <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <Crosshair className="text-foreground" size={18} />
+          )}
+        </button>
+      </div>
+
+      {/* Mobile: loading indicator top-right */}
       {isLoading && (
-        <div className="absolute top-4 right-4 z-[1001] bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
-          <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-xs font-medium text-muted-foreground">Aggiornamento...</span>
+        <div className="absolute top-4 right-4 z-[1001] flex items-center lg:hidden">
+          <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
+            <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-medium text-muted-foreground">Aggiornamento...</span>
+          </div>
         </div>
       )}
 
+      {/* Mobile: GPS button bottom-right, above progress tracker */}
+      <button
+        onClick={handleLocate}
+        disabled={locating}
+        className="absolute bottom-20 right-4 z-[1001] lg:hidden w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-gray-100 transition-colors disabled:opacity-50"
+        aria-label="Trova la mia posizione"
+      >
+        {locating ? (
+          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <Crosshair className="text-foreground" size={18} />
+        )}
+      </button>
+
       <MapContainer
         center={[44.9, 9.5]}
-        zoom={7}
+        zoom={6}
         className="w-full h-full"
         zoomControl={true}
       >
-        <ThemeAwareTileLayer />
+        {resolvedTheme === "dark" ? <DarkTileLayer /> : <LightTileLayer />}
         <FitBounds benches={benches} />
-        <UserLocation />
-        <ViewportFilteredMarkers
+        <StoreMapRef mapRef={mapRef} />
+        <UserMarker position={userPosition} />
+        <BenchMarkers
           benches={benches}
           visitedIds={visitedIds}
           onToggleVisited={onToggleVisited}
