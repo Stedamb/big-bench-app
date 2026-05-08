@@ -39,7 +39,7 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
 
         {bench && (
             <div>
-              <div className="max-w-2xl mx-auto flex flex-col gap-6 sm:gap-8">
+              <div className="max-w-2xl mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8">
 
                 {/* Color accent bar */}
                 <div
