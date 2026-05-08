@@ -53,11 +53,6 @@
     opacity: 0.055;
   }
 
-  /* Dark map tiles via CSS filter (no API key needed) */
-  .map-tiles-dark {
-    filter: grayscale(0.9) invert(0.92) brightness(0.85);
-  }
-
   @keyframes theme-wipe-left {
     0%   { transform: translateX(-100%); animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1); }
     50%  { transform: translateX(0%);    animation-timing-function: linear; }

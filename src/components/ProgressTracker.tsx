@@ -39,7 +39,7 @@ const ProgressTracker = ({ visitedIds, benches, isLoading }: ProgressTrackerProp
           </div>
       </button>
 
-      {isOpen && (
+      <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
         <div className="overflow-hidden">
           <div className="px-4 pb-4 pt-1 border-t border-border space-y-4">
             <div className="space-y-1.5">
@@ -58,7 +58,7 @@ const ProgressTracker = ({ visitedIds, benches, isLoading }: ProgressTrackerProp
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };
