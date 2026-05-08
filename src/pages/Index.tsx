@@ -1,11 +1,12 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import Header from "@/components/Header";
-import BenchMap from "@/components/BenchMap";
+import BenchMap, { type BenchMapHandle } from "@/components/BenchMap";
 import ProgressTracker from "@/components/ProgressTracker";
 import BenchVault from "@/components/BenchVault";
 import MapFilters from "@/components/MapFilters";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches, type Bench } from "@/hooks/useBenches";
+import { Crosshair } from "lucide-react";
 
 const Index = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
@@ -14,6 +15,7 @@ const Index = () => {
   // Convert to Set for O(1) lookups
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
   const [selectedBench, setSelectedBench] = useState<Bench | null>(null);
+  const benchMapRef = useRef<BenchMapHandle>(null);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,6 +59,7 @@ const Index = () => {
         {/* Map */}
         <div className="absolute inset-0">
           <BenchMap
+            ref={benchMapRef}
             benches={filteredBenches}
             isLoading={isFetching}
             visitedIds={visitedIds}
@@ -90,9 +93,18 @@ const Index = () => {
           <ProgressTracker visitedIds={visitedIds} benches={benches} isLoading={isFetching} />
         </div>
 
-        {/* Mobile progress - bottom sheet style */}
+        {/* Mobile progress + GPS - bottom sheet style */}
         {!selectedBench && (
-          <div className="absolute bottom-4 left-4 right-4 z-[1000] lg:hidden">
+          <div className="absolute bottom-4 left-4 right-4 z-[1000] lg:hidden flex flex-col gap-2">
+            <div className="flex justify-end">
+              <button
+                onClick={() => benchMapRef.current?.locate()}
+                className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-gray-100 transition-colors"
+                aria-label="Trova la mia posizione"
+              >
+                <Crosshair className="text-foreground" size={18} />
+              </button>
+            </div>
             <ProgressTracker visitedIds={visitedIds} benches={benches} isLoading={isFetching} />
           </div>
         )}

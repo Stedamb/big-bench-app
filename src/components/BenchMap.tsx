@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import { useTheme } from "next-themes";
 import L from "leaflet";
@@ -156,7 +156,12 @@ interface BenchMapProps {
   onSelectBench: (bench: Bench) => void;
 }
 
-const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench }: BenchMapProps) => {
+export interface BenchMapHandle {
+  locate: () => void;
+  locating: boolean;
+}
+
+const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench }, ref) => {
   const { resolvedTheme } = useTheme();
   const mapRef = useRef<L.Map | null>(null);
   const [userPosition, setUserPosition] = useState<L.LatLng | null>(null);
@@ -176,6 +181,8 @@ const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBen
       { enableHighAccuracy: false, timeout: 10000 },
     );
   }, [locating]);
+
+  useImperativeHandle(ref, () => ({ locate: handleLocate, locating }), [handleLocate, locating]);
 
   return (
     <div className="relative w-full h-full">
@@ -211,20 +218,6 @@ const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBen
         </div>
       )}
 
-      {/* Mobile: GPS button bottom-right, above progress tracker */}
-      <button
-        onClick={handleLocate}
-        disabled={locating}
-        className="absolute bottom-20 right-4 z-[1001] lg:hidden w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-gray-100 transition-colors disabled:opacity-50"
-        aria-label="Trova la mia posizione"
-      >
-        {locating ? (
-          <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <Crosshair className="text-foreground" size={18} />
-        )}
-      </button>
-
       <MapContainer
         center={[44.9, 9.5]}
         zoom={6}
@@ -244,6 +237,6 @@ const BenchMap = ({ benches, isLoading, visitedIds, onToggleVisited, onSelectBen
       </MapContainer>
     </div>
   );
-};
+});
 
 export default BenchMap;
