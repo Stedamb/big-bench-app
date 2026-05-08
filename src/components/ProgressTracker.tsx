@@ -26,7 +26,7 @@ const ProgressTracker = ({ visitedIds, benches, isLoading }: ProgressTrackerProp
     <div className="bg-background/90 backdrop-blur-md rounded-2xl border border-border shadow-md overflow-hidden w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 flex items-center justify-between text-sm font-medium hover:bg-muted/40 transition-colors"
+        className="w-full px-5 py-4 flex items-center justify-between text-sm font-medium hover:bg-muted/40 transition-colors"
       >
         <span className="text-foreground">Il tuo percorso</span>
           <div className="flex items-center gap-2">
@@ -41,7 +41,7 @@ const ProgressTracker = ({ visitedIds, benches, isLoading }: ProgressTrackerProp
 
       <div className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}>
         <div className="overflow-hidden">
-          <div className="px-4 pb-4 pt-1 border-t border-border space-y-4">
+          <div className="px-5 pb-5 pt-2 border-t border-border space-y-4">
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>Panchine</span>
