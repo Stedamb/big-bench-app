@@ -21,17 +21,14 @@ current_bench_name = None
 current_lines = []
 
 for row in rows:
+    # A bench entry row is identified by a non-empty numeric bench number in column 0
     col0 = (row[0].strip() if len(row) > 0 else "")
     col1 = (row[1].strip() if len(row) > 1 else "")
     col2 = (row[2] if len(row) > 2 else "")
 
-    is_continuation = (col0 == "" and col1 == "")
-
-    if is_continuation:
-        if col2:
-            current_lines.append(col2)
-    else:
-        if current_bench_num is not None:
+    if col0 and col0.isdigit():
+        # Save previous
+        if current_bench_num:
             bench_entries.append({
                 "bench_num": current_bench_num,
                 "bench_name": current_bench_name,
@@ -40,6 +37,10 @@ for row in rows:
         current_bench_num = col0
         current_bench_name = col1
         current_lines = [col2] if col2 else []
+    else:
+        # It's a continuation line for the current bench
+        if col1: current_lines.append(col1)
+        if col2: current_lines.append(col2)
 
 if current_bench_num is not None:
     bench_entries.append({
@@ -78,6 +79,7 @@ def parse_bench_locations(text):
         r'^(?:alle|e dalle|dalle|dal|da|e|lunedì|martedì|mercoledì|giovedì|venerdì|sabato|domenica|'
         r'\d{1,2}[:\.]?\d{0,2}\s|Chiuso|Aperto|Orario|Orari|sempre|tutti|Periodo|'
         r'Invernale|Estivo|Feriali|Festivi|nella|presso|su\s|previa|'
+        r'i\s+giorni|tutti\s+i|ogni|'
         r'sabato|domenica|il\s+(?:lunedì|martedì|mercoledì|giovedì|venerdì|sabato|domenica))',
         re.IGNORECASE
     )
@@ -158,7 +160,7 @@ def parse_bench_locations(text):
 def extract_fields(name, lines):
     full_text = " ".join(lines)
 
-    # Extract phone
+    # Extract phone from full text
     phone = ""
     phone_matches = re.findall(
         r'(?:Tel\.?\s*:?\s*|tel\.?\s*:?\s*|T\.\s*|Phone\s*:?\s*)([\d\s\.\-\+\(\)]{6,30})',
@@ -170,7 +172,7 @@ def extract_fields(name, lines):
         if len(phone) > 50:
             phone = phone[:50]
 
-    # Extract email
+    # Extract email from full text
     email = ""
     email_match = re.search(r'[\w\.\-\+]+@[\w\.\-]+\.\w{2,}', full_text)
     if email_match:
@@ -209,24 +211,34 @@ def extract_fields(name, lines):
     # Extract opening hours - look for time patterns and day names
     opening_hours = ""
     hours_parts = []
+    
+    # regex for hours
+    hours_pattern = r'(?:Aperto|Orario|Orari|Apertura|dal\s+(?:lunedì|martedì|mercoledì|giovedì|venerdì|sabato|domenica)|tutti\s+i\s+giorni|sempre\s+aperto|Chiuso|Chiusura|Giorno\s+di\s+chiusura|Feriali|Festivi|Periodo\s+di\s+chiusura|Invernale|Estivo|\d{1,2}[:\.]?\d{0,2}\s*[-–]\s*\d{1,2}[:\.]?\d{0,2})'
+
     for line in lines:
-        # Skip the name line and address line
+        # Check if name line itself contains hours after a pipe
+        if line == lines[0] and '|' in line:
+            parts = [p.strip() for p in line.split('|')]
+            for p in parts[1:]:
+                if re.search(hours_pattern, p, re.IGNORECASE):
+                    hours_parts.append(p)
+            continue
+            
         if line == lines[0]:
             continue
+            
         if address and line.startswith(address[:20]):
             continue
 
         # Look for hours patterns
-        if re.search(
-            r'(?:Aperto|Orario|Orari|Apertura|dal\s+(?:lunedì|martedì|mercoledì|giovedì|venerdì|sabato|domenica)|'
-            r'tutti\s+i\s+giorni|sempre\s+aperto|Chiuso|Chiusura|Giorno\s+di\s+chiusura|'
-            r'Feriali|Festivi|Periodo\s+di\s+chiusura|Invernale|Estivo|'
-            r'\d{1,2}[:\.]?\d{0,2}\s*[-–]\s*\d{1,2}[:\.]?\d{0,2})',
-            line, re.IGNORECASE
-        ):
+        if re.search(hours_pattern, line, re.IGNORECASE):
             # Clean the line: remove pipe-separated fields that are addresses/phones
             cleaned = line
+            # Remove phone/email with prefix
             cleaned = re.sub(r'\s*\|\s*(?:Tel|tel|T\.|Phone|@|E-mail|email)\s*:?.*$', '', cleaned, flags=re.IGNORECASE)
+            # Remove phone-like numbers at the beginning of the line followed by a pipe
+            cleaned = re.sub(r'^[\d\s\.]{7,}\s*\|\s*', '', cleaned)
+            # Remove address-like parts
             cleaned = re.sub(r'\s*\|\s*(?:Via|Piazza|Localit|Loc\.|Reg\.|Frazione|Fraz\.).*$', '', cleaned, flags=re.IGNORECASE)
             if cleaned.strip():
                 hours_parts.append(cleaned.strip())
@@ -236,6 +248,31 @@ def extract_fields(name, lines):
         opening_hours = re.sub(r'\s+', ' ', opening_hours).strip()
         if len(opening_hours) > 500:
             opening_hours = opening_hours[:500]
+
+    # Clean name - MUST BE DONE AFTER hours extraction if we use the original name
+    clean_name = name
+    if '|' in clean_name:
+        parts = [p.strip() for p in clean_name.split('|')]
+        # Keep only the part that doesn't look like hours/phone/email
+        filtered_parts = []
+        for p in parts:
+            if not re.search(hours_pattern, p, re.IGNORECASE) and \
+               not re.search(r'[\w\.\-\+]+@[\w\.\-]+\.\w{2,}', p) and \
+               not re.search(r'(?:Tel|tel|T\.)', p, re.IGNORECASE):
+                filtered_parts.append(p)
+        if filtered_parts:
+            clean_name = " | ".join(filtered_parts)
+        else:
+            clean_name = parts[0]
+
+    clean_name = clean_name.strip()
+    clean_name = re.sub(r'\s+', ' ', clean_name)
+    # Clean up common garbage at the end
+    clean_name = re.sub(r'[* ]*SOLO\s+(?:TIMBRO|PASSAPORTI)[* ]*', '', clean_name, flags=re.IGNORECASE)
+    clean_name = re.sub(r'\s*[\|–\-]\s*$', '', clean_name).strip()
+    
+    if len(clean_name) > 200:
+        clean_name = clean_name[:200]
 
     # Extract notes
     notes = ""
@@ -270,13 +307,6 @@ def extract_fields(name, lines):
         if re.search(pattern, full_text, re.IGNORECASE):
             location_type = ttype
             break
-
-    # Clean name
-    clean_name = name.strip()
-    clean_name = re.sub(r'\s+', ' ', clean_name)
-    clean_name = re.sub(r'\s*[\|–\-]\s*$', '', clean_name).strip()
-    if len(clean_name) > 200:
-        clean_name = clean_name[:200]
 
     return {
         "name": clean_name,
