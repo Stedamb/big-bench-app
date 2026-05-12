@@ -1,7 +1,8 @@
 import { MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import VisitedButton from "@/components/VisitedButton";
+import VisitedButton from "@/components/blocks/VisitedButton";
 import type { Bench } from "@/hooks/useBenches";
+import { translateRegion } from "@/lib/constants";
 
 interface BenchPopupProps {
   bench: Bench;
@@ -27,7 +28,7 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
           <h3 className="font-display text-base leading-tight truncate">{bench.name}</h3>
           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
             <MapPin className="w-3 h-3 shrink-0" />
-            {bench.location}{bench.region ? `, ${bench.region}` : ""}
+            {bench.location}{bench.region ? `, ${translateRegion(bench.region)}` : ""}
           </p>
         </div>
       </div>
