@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import NavMenu from "@/components/NavMenu";
+import NavMenu from "@/components/layout/NavMenu";
 
 const Header = () => {
   const location = useLocation();

@@ -1,11 +1,13 @@
 import * as React from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { X, MapPin, Camera, ExternalLink } from "lucide-react";
+import { X, Camera, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { parseLocalDate } from "@/lib/utils";
 import type { Bench } from "@/hooks/useBenches";
-import VisitedButton from "@/components/VisitedButton";
+import VisitedButton from "@/components/blocks/VisitedButton";
+import BenchHeader from "./BenchHeader";
+import NavigationButtons from "./NavigationButtons";
+import BenchStats from "./BenchStats";
 
 interface BenchVaultProps {
   bench: Bench | null;
@@ -48,23 +50,7 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                 />
 
                 {/* Title block */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground font-sans tracking-widest uppercase">
-                      No. {bench.number}
-                    </span>
-                    <div className="flex gap-1">
-                      {bench.colors?.map((c, i) => (
-                        <div key={i} className="w-3 h-3 rounded-full border border-border/50" style={{ backgroundColor: c }} />
-                      ))}
-                    </div>
-                  </div>
-                  <h2 className="font-display text-3xl sm:text-5xl leading-none">{bench.name}</h2>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 shrink-0" />
-                    {bench.location}{bench.region ? `, ${bench.region}` : ""}
-                  </p>
-                </div>
+                <BenchHeader bench={bench} />
 
                 {/* Main grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -80,41 +66,7 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
 
                   {/* Info + actions */}
                   <div className="flex flex-col justify-between gap-5">
-                    <div className="space-y-4">
-                      {bench.installed_on && (
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Inaugurata</p>
-                          <p className="text-sm font-medium">
-                            {parseLocalDate(bench.installed_on).toLocaleDateString("it-IT", {
-                              year: "numeric", month: "long", day: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      )}
-                      {bench.artist && (
-                        <div>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Artista</p>
-                          <p className="text-sm font-medium">{bench.artist}</p>
-                        </div>
-                      )}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="rounded-lg border border-border p-3 bg-muted/40">
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Coordinate</p>
-                          <p className="text-xs font-medium font-sans tabular-nums">
-                            {bench.lat.toFixed(4)}°N
-                          </p>
-                          <p className="text-xs font-medium font-sans tabular-nums">
-                            {bench.lng.toFixed(4)}°E
-                          </p>
-                        </div>
-                        <div className="rounded-lg border border-border p-3 bg-muted/40">
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Stato</p>
-                          <p className={`text-xs font-medium ${visited ? "text-primary" : "text-muted-foreground"}`}>
-                            {visited ? "Visitata" : "Non visitata"}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                    <BenchStats bench={bench} visited={visited} variant="list" />
 
                     <div className="flex flex-col gap-2">
                       <Button
@@ -124,6 +76,9 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                       >
                         Esplora <ExternalLink className="w-4 h-4" />
                       </Button>
+
+                      <NavigationButtons lat={bench.lat} lng={bench.lng} />
+
                       <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="w-full" />
                     </div>
                   </div>
