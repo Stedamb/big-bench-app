@@ -334,8 +334,6 @@ const BenchDetailPage = () => {
                     </div>
                   </div>
                 ))
-// ... rest of logic
-
               ) : (
                 Array.from({ length: 6 }).map((_, i) => (
                   <div
@@ -424,10 +422,20 @@ const BenchDetailPage = () => {
         </div>
 
         {/* Right column — sidebar */}
-        <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
+        <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start w-full overflow-hidden">
           {/* Visit action + Stats */}
-          <div className="border border-border rounded-md p-5 bg-card">
-            <VisitedButton visited={visited} onToggleVisited={() => toggleVisited(bench.id)} className="w-full gap-2 h-11 mb-6" />
+          <div className="border border-border rounded-md p-5 bg-card overflow-hidden">
+            <div className="flex flex-col gap-3 mb-6">
+              <VisitedButton visited={visited} onToggleVisited={() => toggleVisited(bench.id)} className="w-full gap-2 h-11" />
+              <Button 
+                variant="outline" 
+                className="w-full gap-2 h-11 font-display text-xs uppercase tracking-wider"
+                onClick={() => navigate("/", { state: { selectBenchId: bench.id } })}
+              >
+                <MapPin className="w-4 h-4" />
+                Vedi sulla mappa
+              </Button>
+            </div>
             <BenchStats bench={bench} variant="list" />
 
             <div className="h-48 relative mt-6">
