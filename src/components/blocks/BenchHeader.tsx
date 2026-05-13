@@ -7,6 +7,10 @@ interface BenchHeaderProps {
   className?: string;
 }
 
+/**
+ * Shared component for bench headers, displaying the bench number,
+ * colored badges, name, and translated location/region.
+ */
 const BenchHeader = ({ bench, className = "" }: BenchHeaderProps) => {
   return (
     <div className={`space-y-1.5 ${className}`}>

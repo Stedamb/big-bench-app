@@ -8,6 +8,10 @@ interface NavigationButtonsProps {
   className?: string;
 }
 
+/**
+ * Provides action buttons for opening a bench's location in Google Maps
+ * or initiating a 'Drive To' navigation.
+ */
 const NavigationButtons = ({ lat, lng, className = "" }: NavigationButtonsProps) => {
   const { playHaptic } = useHaptics();
   const openGoogleMaps = () => {
