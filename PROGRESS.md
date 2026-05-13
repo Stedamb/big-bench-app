@@ -1,4 +1,24 @@
+# Project Progress - Session May 13, 2026
+
+## 🚀 Overview
+Resolved a critical map navigation bug where "Vedi sulla mappa" (View on Map) failed to center the map on the target bench. 
+
+## ✅ Completed Features
+
+### 1. Map Navigation Reliability Fix
+- **Refactored Map Viewport Control**: Integrated a `MapController` component directly into the `MapContainer` hierarchy to handle programmatic view updates (`map.setView`).
+- **Removed Brittle Ref-based Logic**: Eliminated an unreliable `useEffect` in the parent `BenchMap` component that was attempting to manage map state via `mapRef.current` across re-renders. The new `MapController` approach ensures the map always receives the latest centering instructions immediately upon mount or prop updates.
+- **Improved Interaction flow**: Fixed race conditions between the initial map state and the navigation trigger, ensuring users arrive at the correct marker every time they click "Vedi sulla mappa".
+
+## 📋 Remaining Tasks
+- [ ] Implement user profile editing (avatar/bio).
+- [ ] Activate "Likes" (Bench icons) and "Comments" UI in the Guestbook.
+- [ ] Add image compression/resizing before upload to reduce storage costs.
+
+---
+
 # Project Progress - Session May 12, 2026
+
 
 ## 🚀 Overview
 Executed a major architectural refactor to improve componentization, implemented localization for regions and countries, and added high-end UX polish including haptics and page transitions.
