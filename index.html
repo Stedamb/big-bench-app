@@ -3,18 +3,40 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Big Bench Italia — Mappa e Progresso</title>
+    <title>Big Bench App — Mappa e Passaporto</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="description" content="Scopri tutte le Big Bench in Italia. Mappa interattiva, traccia il tuo progresso e condividi le tue foto." />
-    <meta name="author" content="Big Bench Community" />
-    <meta property="og:title" content="Big Bench Italia" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="description" content="Mappa interattiva delle panchine giganti (Big Bench) in Italia. Traccia il tuo progresso, firma il guestbook e scopri dove timbrare il passaporto." />
+    <meta name="author" content="Big Bench App Team" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:title" content="Big Bench App" />
     <meta property="og:description" content="Mappa interattiva delle panchine giganti in Italia" />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta property="og:image" content="/placeholder.svg" />
 
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta name="twitter:title" content="Big Bench App" />
+    <meta name="twitter:description" content="Mappa interattiva delle panchine giganti in Italia" />
+    <meta name="twitter:image" content="/placeholder.svg" />
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Big Bench App",
+        "url": "https://bigbench.app",
+        "description": "Mappa interattiva e passaporto digitale per le Panchine Giganti.",
+        "applicationCategory": "TravelApplication",
+        "operatingSystem": "Web",
+        "author": {
+          "@type": "Organization",
+          "name": "Big Bench App Community"
+        }
+      }
+    </script>
   </head>
 
   <body>
