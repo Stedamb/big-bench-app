@@ -6,6 +6,10 @@ interface PageTransitionProps {
   children: ReactNode;
 }
 
+/**
+ * Wraps a component with fade and subtle slide-up transitions using motion.
+ * Keyed by location.pathname to trigger animations on route changes.
+ */
 const PageTransition = ({ children }: PageTransitionProps) => {
   const location = useLocation();
 

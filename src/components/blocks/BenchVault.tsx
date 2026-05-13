@@ -17,6 +17,10 @@ interface BenchVaultProps {
   onToggleVisited: () => void;
 }
 
+/**
+ * A bottom sheet drawer that displays detailed information about a selected bench.
+ * Centralizes bench metadata, statistics, and navigation actions.
+ */
 const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProps) => {
   const navigate = useNavigate();
   const { playHaptic } = useHaptics();

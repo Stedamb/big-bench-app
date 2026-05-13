@@ -13,6 +13,10 @@ interface VisitedButtonProps {
 
 const CONFIRM_TIMEOUT = 2000;
 
+/**
+ * A stateful button to toggle the visited status of a bench.
+ * Includes confirmation logic, haptics, and a marquee for guest users.
+ */
 const VisitedButton = ({ visited, onToggleVisited, className = "", benchId }: VisitedButtonProps) => {
   const { user } = useAuth();
   const [confirming, setConfirming] = useState(false);

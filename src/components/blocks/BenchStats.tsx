@@ -9,8 +9,17 @@ interface BenchStatsProps {
   variant?: "grid" | "list";
 }
 
+/**
+ * Displays key statistics for a bench, including altitude, installation date,
+ * colors, and coordinates. Supports 'grid' and 'list' variants.
+ */
 const BenchStats = ({ bench, visited, className = "", variant = "grid" }: BenchStatsProps) => {
   const primaryColor = bench.colors?.[0] || "#C4572A";
+
+  const latDir = bench.lat >= 0 ? "N" : "S";
+  const lngDir = bench.lng >= 0 ? "E" : "W";
+  const absLat = Math.abs(bench.lat).toFixed(4);
+  const absLng = Math.abs(bench.lng).toFixed(4);
 
   if (variant === "list") {
     return (
@@ -34,8 +43,8 @@ const BenchStats = ({ bench, visited, className = "", variant = "grid" }: BenchS
         <div className="grid grid-cols-2 gap-3">
           <div className="rounded-lg border border-border p-3 bg-muted/40">
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest mb-0.5">Coordinate</p>
-            <p className="text-xs font-medium font-sans tabular-nums">{bench.lat.toFixed(4)}°N</p>
-            <p className="text-xs font-medium font-sans tabular-nums">{bench.lng.toFixed(4)}°E</p>
+            <p className="text-xs font-medium font-sans tabular-nums">{absLat}°{latDir}</p>
+            <p className="text-xs font-medium font-sans tabular-nums">{absLng}°{lngDir}</p>
           </div>
           {visited !== undefined && (
             <div className="rounded-lg border border-border p-3 bg-muted/40">
