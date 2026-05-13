@@ -7,10 +7,8 @@ import {
   ArrowLeft,
   Camera,
   Check,
-  ExternalLink,
   MapPin,
   Mountain,
-  Navigation,
   Star,
   Upload,
   Loader2,
@@ -26,13 +24,14 @@ import {
   Wine,
   Building,
 } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBench } from "@/hooks/useBenches";
-import VisitedButton from "@/components/VisitedButton";
+import VisitedButton from "@/components/blocks/VisitedButton";
+import BenchStats from "@/components/blocks/BenchStats";
 import { useGuestbook } from "@/hooks/useGuestbook";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -44,6 +43,8 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { translateRegion } from "@/lib/constants";
+import NavigationButtons from "@/components/blocks/NavigationButtons";
 
 const Stars = ({ value, onSelect }: { value: number; onSelect?: (v: number) => void }) => (
   <div className="flex items-center gap-0.5">
@@ -204,7 +205,7 @@ const BenchDetailPage = () => {
                   Bench No. {bench.number}
                 </span>
                 <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  {bench.region} {bench.province ? `· ${bench.province}` : ""}
+                  {translateRegion(bench.region)} {bench.province ? `· ${bench.province}` : ""}
                 </span>
               </div>
               <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight mb-3">
@@ -212,7 +213,7 @@ const BenchDetailPage = () => {
               </h1>
               <p className="font-editorial italic text-lg text-muted-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4" />
-                {bench.location}, {bench.region} {bench.altitude_m ? `· ${bench.altitude_m}m s.l.m.` : ""}
+                {bench.location}, {translateRegion(bench.region)} {bench.altitude_m ? `· ${bench.altitude_m}m s.l.m.` : ""}
               </p>
             </div>
 
@@ -238,26 +239,6 @@ const BenchDetailPage = () => {
       <main className="container py-8 lg:py-12 grid lg:grid-cols-3 gap-10">
         {/* Left column — main */}
         <div className="lg:col-span-2 space-y-12">
-          {/* Description */}
-          <section>
-            <h2 className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground mb-4">
-              La Storia
-            </h2>
-            <p className="font-editorial text-lg leading-relaxed drop-cap">
-              {bench.description || "Questa panchina gigante invita i visitatori a fermarsi, sedersi e tornare bambini di fronte alla meraviglia del paesaggio circostante."}
-            </p>
-            {bench.installed_on && (
-              <p className="font-editorial text-base leading-relaxed mt-4 text-muted-foreground">
-                Installata il {parseLocalDate(bench.installed_on).toLocaleDateString("it-IT", { year: 'numeric', month: 'long', day: 'numeric' })} come parte del Big Bench Community
-                Project ideato da Chris Bangle.
-              </p>
-            )}
-            {bench.artist && (
-              <p className="font-editorial text-base leading-relaxed mt-2 text-muted-foreground">
-                Artista: {bench.artist}
-              </p>
-            )}
-          </section>
 
           {/* Photos */}
           <section>
@@ -444,48 +425,40 @@ const BenchDetailPage = () => {
 
         {/* Right column — sidebar */}
         <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start">
-          {/* Visit action */}
+          {/* Visit action + Stats */}
           <div className="border border-border rounded-md p-5 bg-card">
-            <VisitedButton visited={visited} onToggleVisited={() => toggleVisited(bench.id)} className="w-full gap-2 h-11" />
-          </div>
+            <VisitedButton visited={visited} onToggleVisited={() => toggleVisited(bench.id)} className="w-full gap-2 h-11 mb-6" />
+            <BenchStats bench={bench} variant="list" />
 
-          {/* Stats */}
-          <div className="border border-border rounded-md bg-card overflow-hidden">
-            <div className="p-5 grid grid-cols-2 gap-4">
-              {bench.altitude_m && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                    Altitudine
-                  </p>
-                  <p className="font-display text-2xl font-bold flex items-baseline gap-1">
-                    {bench.altitude_m}
-                    <span className="text-xs font-normal text-muted-foreground">
-                      m
-                    </span>
-                  </p>
-                </div>
+            <div className="h-48 relative mt-6">
+              {markerIcon && (
+                <MapContainer
+                  center={[bench.lat, bench.lng]}
+                  zoom={12}
+                  scrollWheelZoom={false}
+                  dragging={false}
+                  doubleClickZoom={false}
+                  zoomControl={false}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    attribution=""
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Marker
+                    position={[bench.lat, bench.lng]}
+                    icon={markerIcon}
+                  />
+                </MapContainer>
               )}
-              {bench.installed_on && (
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                    Anno
-                  </p>
-                  <p className="font-display text-2xl font-bold">
-                    {parseLocalDate(bench.installed_on).getFullYear()}
-                  </p>
-                </div>
-              )}
-              <div className="col-span-2 border-t border-border pt-4">
+            </div>
+            <div className="py-4 space-y-2">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">
-                  Coordinate
-                </p>
-                <p className="font-mono text-xs">
-                  {bench.lat.toFixed(5)}°N, {bench.lng.toFixed(5)}°E
-                </p>
-              </div>
+                Come Arrivare
+              </p>
+              <NavigationButtons lat={bench.lat} lng={bench.lng} className="grid-cols-1" />
             </div>
           </div>
-
           {/* Stamp Locations Sidebar Section */}
           {stampLocations.length > 0 && (
             <div className="border border-border rounded-md bg-card p-5 space-y-6">
@@ -555,83 +528,7 @@ const BenchDetailPage = () => {
             </div>
           )}
 
-          {/* Mini map + directions */}
-          <div className="border border-border rounded-md bg-card overflow-hidden">
-            <div className="h-48 relative">
-              {markerIcon && (
-                <MapContainer
-                  center={[bench.lat, bench.lng]}
-                  zoom={12}
-                  scrollWheelZoom={false}
-                  dragging={false}
-                  doubleClickZoom={false}
-                  zoomControl={false}
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <TileLayer
-                    attribution=""
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  />
-                  <Marker
-                    position={[bench.lat, bench.lng]}
-                    icon={markerIcon}
-                  />
-                </MapContainer>
-              )}
-            </div>
-            <div className="p-4 space-y-2">
-              <h3 className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground mb-2">
-                Come Arrivare
-              </h3>
-              <Button
-                className="w-full gap-2 h-10"
-                variant="default"
-                onClick={() =>
-                  window.open(
-                    `https://www.google.com/maps/dir/?api=1&destination=${bench.lat},${bench.lng}`,
-                    "_blank"
-                  )
-                }
-              >
-                <Navigation className="w-4 h-4" />
-                Indicazioni stradali
-              </Button>
-              <Button
-                className="w-full gap-2 h-10"
-                variant="outline"
-                onClick={() =>
-                  window.open(
-                    `https://www.google.com/maps?q=${bench.lat},${bench.lng}`,
-                    "_blank"
-                  )
-                }
-              >
-                <ExternalLink className="w-4 h-4" />
-                Apri in Google Maps
-              </Button>
-            </div>
-          </div>
 
-          {/* Info card */}
-          <div className="border border-border rounded-md bg-card p-5">
-            <h3 className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground mb-3">
-              Informazioni Utili
-            </h3>
-            <ul className="space-y-2.5 text-sm font-editorial">
-              <li className="flex items-start gap-2">
-                <Mountain className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                <span>Sentiero panoramico, scarponi consigliati</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                <span>Parcheggio disponibile nelle vicinanze</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Camera className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
-                <span>Migliore luce: alba e tramonto</span>
-              </li>
-            </ul>
-          </div>
         </aside>
       </main>
 

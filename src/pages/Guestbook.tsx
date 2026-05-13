@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Camera, MapPin, MessageSquare, Star, Loader2 } from "lucide-react";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { useGuestbook, type GuestbookPost } from "@/hooks/useGuestbook";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";

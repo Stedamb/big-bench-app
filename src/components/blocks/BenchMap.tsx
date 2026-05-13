@@ -94,7 +94,8 @@ function FitBounds({ benches }: { benches: Bench[] }) {
   useEffect(() => {
     if (benches.length > 0) {
       const bounds = L.latLngBounds(benches.map(b => [b.lat, b.lng]));
-      map.fitBounds(bounds, { padding: [40, 40] });
+      // Use maxZoom to prevent excessive zooming when there's only one point
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
     }
   }, [map, benches]);
   return null;

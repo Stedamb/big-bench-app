@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback, useRef } from "react";
-import Header from "@/components/Header";
-import BenchMap, { type BenchMapHandle } from "@/components/BenchMap";
-import ProgressTracker from "@/components/ProgressTracker";
-import BenchVault from "@/components/BenchVault";
-import MapFilters from "@/components/MapFilters";
+import Header from "@/components/layout/Header";
+import BenchMap, { type BenchMapHandle } from "@/components/blocks/BenchMap";
+import ProgressTracker from "@/components/blocks/ProgressTracker";
+import BenchVault from "@/components/blocks/BenchVault";
+import MapFilters from "@/components/blocks/MapFilters";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBenches, type Bench } from "@/hooks/useBenches";
 import { Crosshair } from "lucide-react";

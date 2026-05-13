@@ -1,3 +1,52 @@
+# Project Progress - Session May 12, 2026
+
+## 🚀 Overview
+Executed a major architectural refactor to improve componentization, implemented localization for regions and countries, and added high-end UX polish including haptics and page transitions.
+
+## ✅ Completed Features
+
+### 1. Architectural Refactor (DRY & Modular)
+- **Component Restructuring**: Organized the `src/components` directory into clear `layout/` and `blocks/` folders to improve maintainability and discoverability.
+- **Legacy Cleanup**: Identified and deleted unused legacy components (`BenchDetail.tsx`).
+- **Maximum Composability**: Extracted reusable UI blocks to eliminate code duplication between the Bench Drawer (`BenchVault`) and `BenchDetailPage`:
+  - `BenchHeader`: Standardized bench identity display (number, colors, name, location).
+  - `BenchStats`: Flexible component for displaying bench metadata (Altitude, Year, Coordinates) in grid or list layouts.
+  - `NavigationButtons`: Centralized logic for Google Maps and "Drive To" integrations.
+
+### 2. Localization & Mapping
+- **Centralized Mappings**: Created `src/lib/constants.ts` to host all translation logic.
+- **Regional Localization**: Implemented full Italian region translations (e.g., "Piedmont" → "Piemonte").
+- **International Country Support**: Added translations for all European countries currently in the database (Belgium, France, Germany, Poland, etc.).
+- **Global Application**: Integrated these translations into filters, popups, drawers, and headers project-wide.
+
+### 3. UX Polish & Interaction Design
+- **Page Transitions**: Implemented smooth fade-in/fade-out transitions between all routes using the **Motion One** (`motion/react`) library.
+- **Haptic Feedback**: Integrated light haptics for key mobile interactions:
+  - Hamburger menu opening.
+  - Theme toggling (Dark/Light mode).
+  - Info button and navigation link clicks.
+- **Guest Experience**:
+  - Added an infinite scrolling marquee **"ACCEDI PER SALVARE I PROGRESSI"** for unauthenticated users.
+  - Disabled interaction on the "Visited" button for guests to prevent state confusion.
+- **Drawer Refinement**:
+  - Transitioned the Bench Drawer to a dynamic `h-auto` height for a more compact mobile feel.
+  - Temporarily hid the empty photo section with a `TODO` for future community photo activation.
+
+### 4. Map & Performance Optimizations
+- **Zoom Ceiling**: Capped map zoom at `maxZoom: 14` during searches and bench selection. This prevents disorienting "hyper-zoom" when only one bench is visible on the map.
+- **Import Optimization**: Performed a bulk cleanup of unused imports and updated path aliases (`@/components/...`) across the entire project.
+
+## 🛠 Technical Notes
+- **Motion One**: Switched from `framer-motion` to `motion/react` (Motion One) to ensure compatibility with the project's specific bundle constraints while maintaining full `AnimatePresence` support.
+- **CSS Marquee**: Implemented as a pure CSS animation within `tailwind.config.ts` for maximum performance and zero layout shift.
+
+## 📋 Remaining Tasks
+- [ ] Implement user profile editing (avatar/bio).
+- [ ] Activate "Likes" (Bench icons) and "Comments" UI in the Guestbook.
+- [ ] Add image compression/resizing before upload to reduce storage costs.
+
+---
+
 # Project Progress - Session May 6, 2026 (Evening)
 
 ## 🚀 Overview

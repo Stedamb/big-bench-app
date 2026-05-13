@@ -9,6 +9,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useHaptics } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -23,6 +24,7 @@ const NavMenu = () => {
   const navigate  = useNavigate();
   const { user, signOut } = useAuth();
   const { resolvedTheme, setTheme } = useThemeTransition();
+  const { playHaptic } = useHaptics();
 
   const initials = (user?.user_metadata?.display_name || user?.email || "?")
     .slice(0, 2).toUpperCase();
@@ -39,6 +41,7 @@ const NavMenu = () => {
       {/* Trigger */}
       <Drawer.Trigger asChild>
         <button
+          onClick={() => playHaptic("light")}
           aria-label="Apri menu"
           className="flex items-center justify-center w-8 h-8 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-150"
         >
@@ -100,7 +103,11 @@ const NavMenu = () => {
           <div className="border-t border-border px-3 py-4 flex flex-col gap-1">
             {/* Theme toggle */}
             <button
-              onClick={() => { setTheme(resolvedTheme === "dark" ? "light" : "dark"); setOpen(false); }}
+              onClick={() => {
+                playHaptic("light");
+                setTheme(resolvedTheme === "dark" ? "light" : "dark");
+                setOpen(false);
+              }}
               className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-150 w-full"
             >
               {resolvedTheme === "dark"
