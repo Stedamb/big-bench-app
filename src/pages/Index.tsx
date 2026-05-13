@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import BenchMap, { type BenchMapHandle } from "@/components/blocks/BenchMap";
 import ProgressTracker from "@/components/blocks/ProgressTracker";
@@ -13,6 +13,7 @@ const Index = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
   const { data: benches = [], isFetching } = useBenches();
   const location = useLocation();
+  const navigate = useNavigate();
   
   // Convert to Set for O(1) lookups
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
@@ -28,10 +29,10 @@ const Index = () => {
     const state = location.state as { selectBenchId?: number } | null;
     if (state?.selectBenchId) {
       setOpenPopupId(state.selectBenchId);
-      // Clear state to avoid re-triggering on unrelated renders
-      window.history.replaceState({}, document.title);
+      // Clear state via navigate to stay within React Router's flow
+      navigate(".", { replace: true, state: {} });
     }
-  }, [location.state]);
+  }, [location.state, navigate]);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,6 +87,7 @@ const Index = () => {
             }}
             openPopupId={openPopupId}
             isDrawerOpen={!!selectedBench}
+            initialZoom={8}
           />
         </div>
 

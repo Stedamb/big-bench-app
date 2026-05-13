@@ -31,7 +31,10 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
     playHaptic("medium");
     if (bench) {
       onClose();
-      navigate(`/bench/${bench.id}`);
+      // Small delay to let the drawer close animation start smoothly before unmounting
+      setTimeout(() => {
+        navigate(`/bench/${bench.id}`);
+      }, 150);
     }
   };
 

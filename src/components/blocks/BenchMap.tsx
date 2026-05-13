@@ -135,6 +135,24 @@ function UserMarker({ position }: { position: L.LatLng | null }) {
   );
 }
 
+/** Component to handle programmatic map movements (centering, zoom) */
+function MapController({ centerId, benches, zoom }: { centerId: number | null; benches: Bench[]; zoom: number }) {
+  const map = useMap();
+  const lastId = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (centerId && benches.length > 0 && lastId.current !== centerId) {
+      const bench = benches.find(b => b.id === centerId);
+      if (bench) {
+        map.setView([bench.lat, bench.lng], zoom);
+        lastId.current = centerId;
+      }
+    }
+  }, [centerId, benches, zoom, map]);
+
+  return null;
+}
+
 interface BenchMarkersProps {
   benches: Bench[];
   visitedIds: number[];
@@ -160,12 +178,13 @@ function MarkerWithPopup({
 
   useEffect(() => {
     if (shouldOpen && markerRef.current) {
-      // Small delay to ensure marker is added to map and map movement finished
+      // Use a timeout to ensure the map has finished moving and the marker is rendered.
+      // This is more robust than moveend which might not fire if map is already centered.
       const timer = setTimeout(() => {
         if (markerRef.current) {
           markerRef.current.openPopup();
         }
-      }, 300);
+      }, 500);
       return () => clearTimeout(timer);
     }
   }, [shouldOpen]);
@@ -188,12 +207,14 @@ function MarkerWithPopup({
   );
 }
 
-function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, openPopupId }: BenchMarkersProps) {
+function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, openPopupId, initialZoom = 8 }: BenchMarkersProps & { initialZoom?: number }) {
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
 
   return (
     <MarkerClusterGroup 
       chunkedLoading 
+      // When a specific popup is requested, we disable clustering entirely to ensure the marker is visible.
+      // We use 0 instead of initialZoom to be absolutely certain no clustering happens.
       disableClusteringAtZoom={openPopupId ? 0 : 9}
     >
       {benches.map((bench) => (
@@ -218,6 +239,7 @@ interface BenchMapProps {
   onSelectBench: (bench: Bench) => void;
   openPopupId?: number | null;
   isDrawerOpen?: boolean;
+  initialZoom?: number;
 }
 
 export interface BenchMapHandle {
@@ -226,23 +248,11 @@ export interface BenchMapHandle {
   flyTo: (latlng: [number, number], zoom?: number) => void;
 }
 
-const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench, openPopupId, isDrawerOpen }, ref) => {
+const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench, openPopupId, isDrawerOpen, initialZoom = 8 }, ref) => {
   const { resolvedTheme } = useTheme();
   const mapRef = useRef<L.Map | null>(null);
   const [userPosition, setUserPosition] = useState<L.LatLng | null>(null);
   const [locating, setLocating] = useState(false);
-  const lastHandledId = useRef<number | null>(null);
-
-  // Dedicated effect to handle centering when openPopupId changes
-  useEffect(() => {
-    if (openPopupId && benches.length > 0 && mapRef.current && lastHandledId.current !== openPopupId) {
-      const bench = benches.find(b => b.id === openPopupId);
-      if (bench) {
-        mapRef.current.setView([bench.lat, bench.lng], 8);
-        lastHandledId.current = openPopupId;
-      }
-    }
-  }, [openPopupId, benches, mapRef.current]);
 
   const handleLocate = useCallback(() => {
     if (!navigator.geolocation || !mapRef.current || locating) return;
@@ -317,6 +327,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
         {resolvedTheme === "dark" ? <DarkTileLayer /> : <LightTileLayer />}
         <FitBounds benches={benches} disabled={!!openPopupId || isDrawerOpen} />
         <StoreMapRef mapRef={mapRef} />
+        <MapController centerId={openPopupId || null} benches={benches} zoom={initialZoom} />
         <UserMarker position={userPosition} />
         <BenchMarkers
           benches={benches}
@@ -324,6 +335,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
           onToggleVisited={onToggleVisited}
           onSelectBench={onSelectBench}
           openPopupId={openPopupId}
+          initialZoom={initialZoom}
         />
       </MapContainer>
     </div>
