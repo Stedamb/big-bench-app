@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import VisitedButton from "@/components/blocks/VisitedButton";
 import type { Bench } from "@/hooks/useBenches";
 import { translateRegion } from "@/lib/constants";
+import { useHaptics } from "@/lib/haptics";
 
 interface BenchPopupProps {
   bench: Bench;
@@ -13,6 +14,7 @@ interface BenchPopupProps {
 
 const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopupProps) => {
   const color = bench.colors?.[0] || "hsl(var(--primary))";
+  const { playHaptic } = useHaptics();
 
   return (
     <div className="p-3 min-w-[240px] max-w-[280px]">
@@ -40,7 +42,11 @@ const BenchPopup = ({ bench, visited, onToggleVisited, onViewDetail }: BenchPopu
           size="sm"
           variant="default"
           className="text-xs h-8 gap-1 flex-1"
-          onClick={(e) => { e.stopPropagation(); onViewDetail(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            playHaptic("light");
+            onViewDetail();
+          }}
         >
           Info
           <ArrowRight className="w-3 h-3" />

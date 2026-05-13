@@ -3,6 +3,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } f
 import { Button } from "@/components/ui/button";
 import { X, Camera, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useHaptics } from "@/lib/haptics";
 import type { Bench } from "@/hooks/useBenches";
 import VisitedButton from "@/components/blocks/VisitedButton";
 import BenchHeader from "./BenchHeader";
@@ -18,6 +19,7 @@ interface BenchVaultProps {
 
 const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProps) => {
   const navigate = useNavigate();
+  const { playHaptic } = useHaptics();
   const isOpen = !!bench;
 
   const primaryColor   = bench?.colors?.[0] || "hsl(var(--primary))";
@@ -33,7 +35,10 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
 
         {/* Close */}
         <button
-          onClick={onClose}
+          onClick={() => {
+            playHaptic("light");
+            onClose();
+          }}
           className="absolute top-5 right-5 w-8 h-8 rounded-full border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10"
         >
           <X className="w-4 h-4" />
@@ -79,7 +84,10 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
                       <Button
                         size="lg"
                         className="w-full"
-                        onClick={() => navigate(`/bench/${bench.id}`)}
+                        onClick={() => {
+                          playHaptic("light");
+                          navigate(`/bench/${bench.id}`);
+                        }}
                       >
                         Esplora <ExternalLink className="w-4 h-4" />
                       </Button>

@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useHaptics } from "@/lib/haptics";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +21,7 @@ const Header = () => {
   const navigate  = useNavigate();
   const { user, signOut } = useAuth();
   const { resolvedTheme, setTheme } = useThemeTransition();
+  const { playHaptic } = useHaptics();
   const isHome = location.pathname === "/";
 
   const handleSignOut = async () => {
@@ -109,7 +111,10 @@ const Header = () => {
                     <UserIcon className="w-4 h-4 mr-2" /> Il mio passaporto
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}>
+                  <DropdownMenuItem onClick={() => {
+                    playHaptic("light");
+                    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+                  }}>
                     {resolvedTheme === "dark" ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
                     {resolvedTheme === "dark" ? "Modalità chiara" : "Modalità scura"}
                   </DropdownMenuItem>
@@ -122,7 +127,10 @@ const Header = () => {
             ) : (
               <>
                 <button
-                  onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                  onClick={() => {
+                    playHaptic("light");
+                    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+                  }}
                   aria-label="Toggle theme"
                   className="w-8 h-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-150"
                 >
