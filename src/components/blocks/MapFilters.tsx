@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { translateCountry, translateRegion } from "@/lib/constants";
 
 interface MapFiltersProps {
   searchQuery:      string;
@@ -54,13 +55,13 @@ const MapFilters = ({
       {/* Country filter */}
       <DropdownMenu>
         <DropdownMenuTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted whitespace-nowrap">
-          {selectedCountry === "all" ? "Paese" : selectedCountry}
+          {selectedCountry === "all" ? "Paese" : translateCountry(selectedCountry)}
           <ChevronDown className="w-3 h-3" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="z-[1100] min-w-[120px]">
           <DropdownMenuItem onClick={() => onCountryChange("all")}>Tutti</DropdownMenuItem>
           {countries.map(c => (
-            <DropdownMenuItem key={c} onClick={() => onCountryChange(c)}>{c}</DropdownMenuItem>
+            <DropdownMenuItem key={c} onClick={() => onCountryChange(c)}>{translateCountry(c)}</DropdownMenuItem>
           ))}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -71,13 +72,13 @@ const MapFilters = ({
           <div className="w-px h-5 bg-border shrink-0" />
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-muted whitespace-nowrap">
-              {selectedRegion === "all" ? "Regione" : selectedRegion}
+              {selectedRegion === "all" ? "Regione" : translateRegion(selectedRegion)}
               <ChevronDown className="w-3 h-3" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="z-[1100] min-w-[140px] max-h-64 overflow-y-auto">
               <DropdownMenuItem onClick={() => onRegionChange("all")}>Tutte</DropdownMenuItem>
               {regions.map(r => (
-                <DropdownMenuItem key={r} onClick={() => onRegionChange(r)}>{r}</DropdownMenuItem>
+                <DropdownMenuItem key={r} onClick={() => onRegionChange(r)}>{translateRegion(r)}</DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
