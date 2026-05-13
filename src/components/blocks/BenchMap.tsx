@@ -213,9 +213,10 @@ function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, ope
   return (
     <MarkerClusterGroup 
       chunkedLoading 
-      // When a specific popup is requested, we disable clustering entirely to ensure the marker is visible.
-      // We use 0 instead of initialZoom to be absolutely certain no clustering happens.
-      disableClusteringAtZoom={openPopupId ? 0 : 9}
+      // When a specific popup is requested, we allow clustering to resume once the user zooms out 
+      // beyond the initial zoom level. This keeps the performance benefit of clustering while 
+      // ensuring the target marker is visible upon initial navigation.
+      disableClusteringAtZoom={openPopupId ? Math.min(initialZoom, 10) : 9}
     >
       {benches.map((bench) => (
         <MarkerWithPopup
