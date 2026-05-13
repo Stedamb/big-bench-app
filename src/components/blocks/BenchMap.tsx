@@ -89,22 +89,39 @@ function LightTileLayer() {
   );
 }
 
-function FitBounds({ benches }: { benches: Bench[] }) {
+function FitBounds({ benches, disabled }: { benches: Bench[]; disabled?: boolean }) {
   const map = useMap();
+  const lastBenchesRef = useRef<Bench[] | null>(null);
+
   useEffect(() => {
-    if (benches.length > 0) {
-      const bounds = L.latLngBounds(benches.map(b => [b.lat, b.lng]));
-      // Use maxZoom to prevent excessive zooming when there's only one point
-      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
+    // If disabled (popup/drawer open), we mark the current benches as "handled" 
+    // so we don't snap to them when the drawer/popup finally closes.
+    if (disabled) {
+      if (benches.length > 0) {
+        lastBenchesRef.current = benches;
+      }
+      return;
     }
-  }, [map, benches]);
+
+    // Only fit bounds if:
+    // 1. Not disabled
+    // 2. We have benches
+    // 3. The benches reference has actually changed (e.g. filters updated)
+    if (benches.length > 0 && benches !== lastBenchesRef.current) {
+      const bounds = L.latLngBounds(benches.map(b => [b.lat, b.lng]));
+      map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
+      lastBenchesRef.current = benches;
+    }
+  }, [map, benches, disabled]);
   return null;
 }
 
 /** Stores the Leaflet map instance in a ref so the outer component can access it. */
 function StoreMapRef({ mapRef }: { mapRef: React.MutableRefObject<L.Map | null> }) {
   const map = useMap();
-  useEffect(() => { mapRef.current = map; }, [map, mapRef]);
+  useEffect(() => { 
+    mapRef.current = map; 
+  }, [map, mapRef]);
   return null;
 }
 
@@ -123,28 +140,71 @@ interface BenchMarkersProps {
   visitedIds: number[];
   onToggleVisited: (id: number) => void;
   onSelectBench: (bench: Bench) => void;
+  openPopupId?: number | null;
 }
 
-function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench }: BenchMarkersProps) {
+function MarkerWithPopup({ 
+  bench, 
+  visited, 
+  onToggleVisited, 
+  onViewDetail, 
+  shouldOpen 
+}: { 
+  bench: Bench; 
+  visited: boolean; 
+  onToggleVisited: () => void; 
+  onViewDetail: () => void; 
+  shouldOpen: boolean;
+}) {
+  const markerRef = useRef<L.Marker>(null);
+
+  useEffect(() => {
+    if (shouldOpen && markerRef.current) {
+      // Small delay to ensure marker is added to map and map movement finished
+      const timer = setTimeout(() => {
+        if (markerRef.current) {
+          markerRef.current.openPopup();
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldOpen]);
+
+  return (
+    <Marker
+      ref={markerRef}
+      position={[bench.lat, bench.lng]}
+      icon={createBenchIcon(bench.colors, bench.id)}
+    >
+      <Popup maxWidth={320} minWidth={280}>
+        <BenchPopup
+          bench={bench}
+          visited={visited}
+          onToggleVisited={onToggleVisited}
+          onViewDetail={onViewDetail}
+        />
+      </Popup>
+    </Marker>
+  );
+}
+
+function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, openPopupId }: BenchMarkersProps) {
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
 
   return (
-    <MarkerClusterGroup chunkedLoading disableClusteringAtZoom={9}>
+    <MarkerClusterGroup 
+      chunkedLoading 
+      disableClusteringAtZoom={openPopupId ? 0 : 9}
+    >
       {benches.map((bench) => (
-        <Marker
+        <MarkerWithPopup
           key={bench.id}
-          position={[bench.lat, bench.lng]}
-          icon={createBenchIcon(bench.colors, bench.id)}
-        >
-          <Popup maxWidth={320} minWidth={280}>
-            <BenchPopup
-              bench={bench}
-              visited={visitedSet.has(bench.id)}
-              onToggleVisited={() => onToggleVisited(bench.id)}
-              onViewDetail={() => onSelectBench(bench)}
-            />
-          </Popup>
-        </Marker>
+          bench={bench}
+          visited={visitedSet.has(bench.id)}
+          onToggleVisited={() => onToggleVisited(bench.id)}
+          onViewDetail={() => onSelectBench(bench)}
+          shouldOpen={openPopupId === bench.id}
+        />
       ))}
     </MarkerClusterGroup>
   );
@@ -156,18 +216,33 @@ interface BenchMapProps {
   visitedIds: number[];
   onToggleVisited: (id: number) => void;
   onSelectBench: (bench: Bench) => void;
+  openPopupId?: number | null;
+  isDrawerOpen?: boolean;
 }
 
 export interface BenchMapHandle {
   locate: () => void;
   locating: boolean;
+  flyTo: (latlng: [number, number], zoom?: number) => void;
 }
 
-const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench }, ref) => {
+const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench, openPopupId, isDrawerOpen }, ref) => {
   const { resolvedTheme } = useTheme();
   const mapRef = useRef<L.Map | null>(null);
   const [userPosition, setUserPosition] = useState<L.LatLng | null>(null);
   const [locating, setLocating] = useState(false);
+  const lastHandledId = useRef<number | null>(null);
+
+  // Dedicated effect to handle centering when openPopupId changes
+  useEffect(() => {
+    if (openPopupId && benches.length > 0 && mapRef.current && lastHandledId.current !== openPopupId) {
+      const bench = benches.find(b => b.id === openPopupId);
+      if (bench) {
+        mapRef.current.setView([bench.lat, bench.lng], 8);
+        lastHandledId.current = openPopupId;
+      }
+    }
+  }, [openPopupId, benches, mapRef.current]);
 
   const handleLocate = useCallback(() => {
     if (!navigator.geolocation || !mapRef.current || locating) return;
@@ -193,11 +268,15 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
     );
   }, [locating]);
 
-  useImperativeHandle(ref, () => ({ locate: handleLocate, locating }), [handleLocate, locating]);
+  const flyTo = useCallback((latlng: [number, number], zoom: number = 13) => {
+    mapRef.current?.flyTo(latlng, zoom, { duration: 1.5 });
+  }, []);
+
+  useImperativeHandle(ref, () => ({ locate: handleLocate, locating, flyTo }), [handleLocate, locating, flyTo]);
 
   return (
     <div className="relative w-full h-full">
-      {/* Desktop: loading indicator + GPS button top-right */}
+      {/* Desktop: indicators + GPS button */}
       <div className="absolute top-4 right-4 z-[1001] hidden lg:flex items-center gap-2">
         {isLoading && (
           <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
@@ -219,7 +298,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
         </button>
       </div>
 
-      {/* Mobile: loading indicator top-right */}
+      {/* Mobile: loading indicator */}
       {isLoading && (
         <div className="absolute top-4 right-4 z-[1001] flex items-center lg:hidden">
           <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
@@ -236,7 +315,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
         zoomControl={true}
       >
         {resolvedTheme === "dark" ? <DarkTileLayer /> : <LightTileLayer />}
-        <FitBounds benches={benches} />
+        <FitBounds benches={benches} disabled={!!openPopupId || isDrawerOpen} />
         <StoreMapRef mapRef={mapRef} />
         <UserMarker position={userPosition} />
         <BenchMarkers
@@ -244,6 +323,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
           visitedIds={visitedIds}
           onToggleVisited={onToggleVisited}
           onSelectBench={onSelectBench}
+          openPopupId={openPopupId}
         />
       </MapContainer>
     </div>

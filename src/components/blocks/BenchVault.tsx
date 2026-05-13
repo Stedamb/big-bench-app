@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { X, Camera, ExternalLink } from "lucide-react";
+import { X, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useHaptics } from "@/lib/haptics";
 import type { Bench } from "@/hooks/useBenches";
@@ -9,6 +9,7 @@ import VisitedButton from "@/components/blocks/VisitedButton";
 import BenchHeader from "./BenchHeader";
 import NavigationButtons from "./NavigationButtons";
 import BenchStats from "./BenchStats";
+import { cn } from "@/lib/utils";
 
 interface BenchVaultProps {
   bench: Bench | null;
@@ -26,85 +27,80 @@ const BenchVault = ({ bench, visited, onClose, onToggleVisited }: BenchVaultProp
   const { playHaptic } = useHaptics();
   const isOpen = !!bench;
 
+  const handleDetails = () => {
+    playHaptic("medium");
+    if (bench) {
+      onClose();
+      navigate(`/bench/${bench.id}`);
+    }
+  };
+
   const primaryColor   = bench?.colors?.[0] || "hsl(var(--primary))";
   const secondaryColor = bench?.colors?.[1] || primaryColor;
 
   return (
     <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DrawerContent className="rounded-t-2xl h-auto max-h-[85vh] border-t border-border pb-8">
+      <DrawerContent 
+        className="h-fit pb-8 border-t border-border shadow-[0_-8px_30px_rgb(0,0,0,0.12)]"
+      >
         <DrawerHeader className="sr-only">
           <DrawerTitle>{bench?.name ?? "Bench Details"}</DrawerTitle>
           <DrawerDescription>Detailed view of the selected bench.</DrawerDescription>
         </DrawerHeader>
 
-        {/* Close */}
-        <button
-          onClick={() => {
-            playHaptic("light");
-            onClose();
-          }}
-          className="absolute top-5 right-5 w-8 h-8 rounded-full border border-border bg-background flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        {/* Close Button */}
+        <div className="absolute top-6 right-6 z-20">
+          <div className="max-w-4xl mx-auto relative">
+            <button
+              onClick={() => {
+                playHaptic("light");
+                onClose();
+              }}
+              className="w-10 h-10 rounded-full border border-border bg-background/80 backdrop-blur-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all shadow-sm"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
 
         {bench && (
-            <div>
-              <div className="max-w-2xl mx-auto px-4 sm:px-6 flex flex-col gap-6 sm:gap-8">
+          <div className="h-full overflow-y-auto pt-10">
+            <div className="max-w-3xl mx-auto px-6 sm:px-8 flex flex-col gap-8 sm:gap-10">
 
-                {/* Color accent bar */}
-                <div
-                  className="h-1 w-16 rounded-full opacity-80"
-                  style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
-                />
+              {/* Color accent bar */}
+              <div
+                className="h-1.5 w-24 rounded-full opacity-90"
+                style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+              />
 
-                {/* Title block */}
-                <BenchHeader bench={bench} />
+              {/* Title block */}
+              <BenchHeader bench={bench} className="sm:space-y-4" />
 
-                {/* Main grid */}
-                <div className={`grid grid-cols-1 ${bench.image_url ? "sm:grid-cols-2" : "sm:max-w-md"} gap-5`}>
-                  {/* TODO: This will be updated when photos are ready */}
-                  {/* 
-                  {bench.image_url && (
-                    <div className="rounded-xl border border-border bg-muted aspect-[4/3] relative overflow-hidden">
-                      <img
-                        src={bench.image_url}
-                        alt={bench.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <div
-                        className="absolute bottom-0 left-0 right-0 h-1"
-                        style={{ background: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
-                      />
-                    </div>
-                  )}
-                  */}
+              {/* Main content */}
+              <div className="flex flex-col gap-10">
+                <BenchStats bench={bench} visited={visited} variant="list" />
 
-                  {/* Info + actions */}
-                  <div className="flex flex-col justify-between gap-5">
-                    <BenchStats bench={bench} visited={visited} variant="list" />
+                <div className="flex flex-col gap-4">
+                  <Button
+                    size="lg"
+                    className="w-full h-14 text-lg font-semibold rounded-2xl shadow-md hover:shadow-lg transition-all"
+                    onClick={handleDetails}
+                  >
+                    DETTAGLI <ExternalLink className="w-5 h-5 ml-2" />
+                  </Button>
 
-                    <div className="flex flex-col gap-2">
-                      <Button
-                        size="lg"
-                        className="w-full"
-                        onClick={() => {
-                          playHaptic("light");
-                          navigate(`/bench/${bench.id}`);
-                        }}
-                      >
-                        Esplora <ExternalLink className="w-4 h-4" />
-                      </Button>
+                  <VisitedButton 
+                    visited={visited} 
+                    onToggleVisited={onToggleVisited} 
+                    className="w-full h-12 rounded-xl" 
+                  />
 
-                      <NavigationButtons lat={bench.lat} lng={bench.lng} />
-
-                      <VisitedButton visited={visited} onToggleVisited={onToggleVisited} className="w-full" />
-                    </div>
-                  </div>
+                  <NavigationButtons lat={bench.lat} lng={bench.lng} />
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
       </DrawerContent>
     </Drawer>
   );

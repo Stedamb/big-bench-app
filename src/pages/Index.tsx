@@ -1,4 +1,5 @@
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Header from "@/components/layout/Header";
 import BenchMap, { type BenchMapHandle } from "@/components/blocks/BenchMap";
 import ProgressTracker from "@/components/blocks/ProgressTracker";
@@ -11,11 +12,26 @@ import { Crosshair } from "lucide-react";
 const Index = () => {
   const { visitedIds, toggleVisited } = useVisitedBenches();
   const { data: benches = [], isFetching } = useBenches();
+  const location = useLocation();
   
   // Convert to Set for O(1) lookups
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
   const [selectedBench, setSelectedBench] = useState<Bench | null>(null);
+  const [openPopupId, setOpenPopupId] = useState<number | null>(() => {
+    const state = location.state as { selectBenchId?: number } | null;
+    return state?.selectBenchId || null;
+  });
   const benchMapRef = useRef<BenchMapHandle>(null);
+
+  // Handle navigation state updates
+  useEffect(() => {
+    const state = location.state as { selectBenchId?: number } | null;
+    if (state?.selectBenchId) {
+      setOpenPopupId(state.selectBenchId);
+      // Clear state to avoid re-triggering on unrelated renders
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Filters state
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,7 +80,12 @@ const Index = () => {
             isLoading={isFetching}
             visitedIds={visitedIds}
             onToggleVisited={toggleVisited}
-            onSelectBench={setSelectedBench}
+            onSelectBench={(bench) => {
+              setSelectedBench(bench);
+              setOpenPopupId(null);
+            }}
+            openPopupId={openPopupId}
+            isDrawerOpen={!!selectedBench}
           />
         </div>
 
