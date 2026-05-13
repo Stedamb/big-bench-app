@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { ArrowLeft, Loader2, Mail, Mountain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -75,17 +74,19 @@ const Auth = () => {
 
   const handleGoogle = async () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
     });
-    if (result.error) {
-      toast.error("Accesso Google fallito");
+    
+    if (error) {
+      toast.error("Accesso Google fallito: " + error.message);
       setLoading(false);
       return;
     }
-    if (result.redirected) return;
-    setLoading(false);
-    navigate("/", { replace: true });
+    // Supabase signInWithOAuth redirects the window, so we don't need to navigate manually
   };
 
   return (
