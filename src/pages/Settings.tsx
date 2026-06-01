@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
-import { Loader2, LogOut, User as UserIcon } from "lucide-react";
+import { Camera, Loader2, LogOut, User as UserIcon } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,8 @@ const Settings = () => {
   const [avatarUrl, setAvatarUrl] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate("/auth", { replace: true });
@@ -61,7 +63,7 @@ const Settings = () => {
         setDisplayName(data.display_name ?? "");
         setUsername(data.username ?? "");
         setBio(data.bio ?? "");
-        setAvatarUrl(data.avatar_url ?? "");
+        setAvatarUrl(data.avatar_url ?? user?.user_metadata?.avatar_url ?? user?.user_metadata?.picture ?? "");
       }
       setLoading(false);
     })();
@@ -107,6 +109,41 @@ const Settings = () => {
     navigate("/", { replace: true });
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("L'immagine deve essere inferiore a 2MB");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const fileExt = file.name.split(".").pop();
+      const filePath = `avatars/${user.id}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("bench-photos")
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("bench-photos")
+        .getPublicUrl(filePath);
+
+      setAvatarUrl(publicUrl);
+      toast.success("Avatar caricato. Salva il profilo per confermare.");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Errore durante il caricamento";
+      toast.error(message);
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
   if (authLoading || loading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -134,14 +171,35 @@ const Settings = () => {
         </div>
 
         <form onSubmit={handleSave} className="bg-card border border-border rounded-md p-6 space-y-6">
-          {/* Avatar preview */}
+          {/* Avatar with hover upload */}
           <div className="flex items-center gap-4">
-            <Avatar className="w-16 h-16">
-              <AvatarImage src={avatarUrl || undefined} alt={displayName} />
-              <AvatarFallback className="bg-primary text-primary-foreground font-display font-bold">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative group">
+              <Avatar className="w-16 h-16 ring-2 ring-border">
+                <AvatarImage src={avatarUrl || user?.user_metadata?.avatar_url || user?.user_metadata?.picture || undefined} alt={displayName} />
+                <AvatarFallback className="bg-primary text-primary-foreground font-display font-bold">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+              >
+                {uploading ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-white" />
+                ) : (
+                  <Camera className="w-5 h-5 text-white" />
+                )}
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
+            </div>
             <div>
               <p className="font-display font-bold text-lg">{displayName || "Utente"}</p>
               <p className="text-xs text-muted-foreground">{user?.email}</p>
@@ -149,49 +207,6 @@ const Settings = () => {
           </div>
 
           <div className="editorial-rule" />
-
-          <div className="space-y-1.5">
-            <Label htmlFor="displayName" className="text-xs uppercase tracking-wider">
-              Nome visualizzato
-            </Label>
-            <Input
-              id="displayName"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              maxLength={100}
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="username" className="text-xs uppercase tracking-wider">
-              Username
-            </Label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="mario_rossi"
-              maxLength={40}
-            />
-            <p className="text-xs text-muted-foreground font-editorial italic">
-              Lettere, numeri e underscore. Visibile pubblicamente.
-            </p>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="avatarUrl" className="text-xs uppercase tracking-wider">
-              URL Avatar
-            </Label>
-            <Input
-              id="avatarUrl"
-              type="url"
-              value={avatarUrl}
-              onChange={(e) => setAvatarUrl(e.target.value)}
-              placeholder="https://..."
-              maxLength={500}
-            />
-          </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="bio" className="text-xs uppercase tracking-wider">

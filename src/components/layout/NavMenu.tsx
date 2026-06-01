@@ -26,7 +26,9 @@ const NavMenu = () => {
   const { resolvedTheme, setTheme } = useThemeTransition();
   const { playHaptic } = useHaptics();
 
-  const initials = (user?.user_metadata?.display_name || user?.email || "?")
+  const userName = user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+
+  const initials = (userName || user?.email || "?")
     .slice(0, 2).toUpperCase();
 
   const handleSignOut = async () => {
@@ -127,7 +129,7 @@ const NavMenu = () => {
                   </Avatar>
                   <div className="overflow-hidden leading-tight">
                     <p className="text-sm font-medium truncate">
-                      {user.user_metadata?.display_name || "Utente"}
+                      {userName || user.email?.split("@")[0] || "Utente"}
                     </p>
                     <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
                   </div>
