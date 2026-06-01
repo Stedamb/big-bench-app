@@ -33,7 +33,9 @@ const Header = () => {
     }
   };
 
-  const initials = (user?.user_metadata?.display_name || user?.email || "?")
+  const userName = user?.user_metadata?.display_name || user?.user_metadata?.full_name || user?.user_metadata?.name || null;
+
+  const initials = (userName || user?.email || "?")
     .slice(0, 2)
     .toUpperCase();
 
@@ -87,7 +89,7 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <button className="rounded-full focus:outline-none">
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={user.user_metadata?.avatar_url} alt="Avatar" />
+                      <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="Avatar" />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
                         {initials}
                       </AvatarFallback>
@@ -97,7 +99,7 @@ const Header = () => {
                 <DropdownMenuContent align="end" className="w-56 z-[1100] border-0 shadow-lg">
                   <DropdownMenuLabel>
                     <p className="font-medium text-sm truncate">
-                      {user.user_metadata?.display_name || "Utente"}
+                      {userName || user.email?.split("@")[0] || "Utente"}
                     </p>
                     <p className="text-xs text-muted-foreground truncate font-normal">
                       {user.email}
