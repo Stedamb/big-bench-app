@@ -91,14 +91,22 @@ function LightTileLayer() {
 
 function FitBounds({ benches, disabled }: { benches: Bench[]; disabled?: boolean }) {
   const map = useMap();
-  const lastBenchesRef = useRef<Bench[] | null>(null);
+  const lastSignatureRef = useRef<string | null>(null);
+  // A stable signature of which benches are shown, independent of array
+  // identity, so a background refetch that returns the same benches (just a
+  // new array reference) doesn't re-trigger fitBounds and snap the viewport
+  // back after the user has panned/zoomed away.
+  const signature = useMemo(
+    () => benches.map((b) => b.id).sort((a, b) => a - b).join(","),
+    [benches]
+  );
 
   useEffect(() => {
-    // If disabled (popup/drawer open), we mark the current benches as "handled" 
+    // If disabled (popup/drawer open), we mark the current benches as "handled"
     // so we don't snap to them when the drawer/popup finally closes.
     if (disabled) {
       if (benches.length > 0) {
-        lastBenchesRef.current = benches;
+        lastSignatureRef.current = signature;
       }
       return;
     }
@@ -106,13 +114,13 @@ function FitBounds({ benches, disabled }: { benches: Bench[]; disabled?: boolean
     // Only fit bounds if:
     // 1. Not disabled
     // 2. We have benches
-    // 3. The benches reference has actually changed (e.g. filters updated)
-    if (benches.length > 0 && benches !== lastBenchesRef.current) {
+    // 3. The set of benches has actually changed (e.g. filters updated)
+    if (benches.length > 0 && signature !== lastSignatureRef.current) {
       const bounds = L.latLngBounds(benches.map(b => [b.lat, b.lng]));
       map.fitBounds(bounds, { padding: [40, 40], maxZoom: 10 });
-      lastBenchesRef.current = benches;
+      lastSignatureRef.current = signature;
     }
-  }, [map, benches, disabled]);
+  }, [map, benches, disabled, signature]);
   return null;
 }
 
@@ -159,20 +167,23 @@ interface BenchMarkersProps {
   onToggleVisited: (id: number) => void;
   onSelectBench: (bench: Bench) => void;
   openPopupId?: number | null;
+  onPopupClose?: (id: number) => void;
 }
 
-function MarkerWithPopup({ 
-  bench, 
-  visited, 
-  onToggleVisited, 
-  onViewDetail, 
-  shouldOpen 
-}: { 
-  bench: Bench; 
-  visited: boolean; 
-  onToggleVisited: () => void; 
-  onViewDetail: () => void; 
+function MarkerWithPopup({
+  bench,
+  visited,
+  onToggleVisited,
+  onViewDetail,
+  shouldOpen,
+  onPopupClose,
+}: {
+  bench: Bench;
+  visited: boolean;
+  onToggleVisited: () => void;
+  onViewDetail: () => void;
   shouldOpen: boolean;
+  onPopupClose?: (id: number) => void;
 }) {
   const markerRef = useRef<L.Marker>(null);
 
@@ -194,6 +205,9 @@ function MarkerWithPopup({
       ref={markerRef}
       position={[bench.lat, bench.lng]}
       icon={createBenchIcon(bench.colors, bench.id)}
+      eventHandlers={{
+        popupclose: () => onPopupClose?.(bench.id),
+      }}
     >
       <Popup maxWidth={320} minWidth={280}>
         <BenchPopup
@@ -207,16 +221,19 @@ function MarkerWithPopup({
   );
 }
 
-function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, openPopupId, initialZoom = 8 }: BenchMarkersProps & { initialZoom?: number }) {
+function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, openPopupId, onPopupClose, initialZoom = 8 }: BenchMarkersProps & { initialZoom?: number }) {
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
 
+  const disableClusteringAtZoom = openPopupId ? Math.min(initialZoom, 10) : 9;
+
   return (
-    <MarkerClusterGroup 
-      chunkedLoading 
-      // When a specific popup is requested, we allow clustering to resume once the user zooms out 
-      // beyond the initial zoom level. This keeps the performance benefit of clustering while 
-      // ensuring the target marker is visible upon initial navigation.
-      disableClusteringAtZoom={openPopupId ? Math.min(initialZoom, 10) : 9}
+    <MarkerClusterGroup
+      // react-leaflet-cluster@2.1.0's prop-update handler is a no-op, so
+      // changing disableClusteringAtZoom on an existing instance has no
+      // effect; force a remount by keying on the value it should take.
+      key={disableClusteringAtZoom}
+      chunkedLoading
+      disableClusteringAtZoom={disableClusteringAtZoom}
     >
       {benches.map((bench) => (
         <MarkerWithPopup
@@ -226,6 +243,7 @@ function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, ope
           onToggleVisited={() => onToggleVisited(bench.id)}
           onViewDetail={() => onSelectBench(bench)}
           shouldOpen={openPopupId === bench.id}
+          onPopupClose={onPopupClose}
         />
       ))}
     </MarkerClusterGroup>
@@ -239,6 +257,7 @@ interface BenchMapProps {
   onToggleVisited: (id: number) => void;
   onSelectBench: (bench: Bench) => void;
   openPopupId?: number | null;
+  onPopupClose?: (id: number) => void;
   isDrawerOpen?: boolean;
   initialZoom?: number;
 }
@@ -249,7 +268,7 @@ export interface BenchMapHandle {
   flyTo: (latlng: [number, number], zoom?: number) => void;
 }
 
-const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench, openPopupId, isDrawerOpen, initialZoom = 8 }, ref) => {
+const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading, visitedIds, onToggleVisited, onSelectBench, openPopupId, onPopupClose, isDrawerOpen, initialZoom = 8 }, ref) => {
   const { resolvedTheme } = useTheme();
   const mapRef = useRef<L.Map | null>(null);
   const [userPosition, setUserPosition] = useState<L.LatLng | null>(null);
@@ -336,6 +355,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
           onToggleVisited={onToggleVisited}
           onSelectBench={onSelectBench}
           openPopupId={openPopupId}
+          onPopupClose={onPopupClose}
           initialZoom={initialZoom}
         />
       </MapContainer>

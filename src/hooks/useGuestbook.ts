@@ -88,7 +88,15 @@ export const useGuestbook = (benchId?: number) => {
     }) => {
       if (!user) throw new Error("Must be logged in to post");
 
-      // 1. Create the post
+      // 1. Upload images first, so a failed upload never leaves behind a post
+      // row that permanently blocks retries via the one-review-per-bench
+      // unique constraint.
+      const uploads =
+        imageFiles.length > 0
+          ? await Promise.all(imageFiles.map((file) => uploadImage(file)))
+          : [];
+
+      // 2. Create the post
       const { data: post, error: postError } = await supabase
         .from("community_posts")
         .insert({
@@ -107,18 +115,14 @@ export const useGuestbook = (benchId?: number) => {
         throw postError;
       }
 
-      // 2. Upload images and link them
-      if (imageFiles.length > 0) {
-        const uploadPromises = imageFiles.map(async (file) => {
-          const { publicUrl, filePath } = await uploadImage(file);
-          return {
-            post_id: post.id,
-            image_url: publicUrl,
-            storage_path: filePath,
-          };
-        });
+      // 3. Link the uploaded images to the post
+      if (uploads.length > 0) {
+        const imageData = uploads.map(({ publicUrl, filePath }) => ({
+          post_id: post.id,
+          image_url: publicUrl,
+          storage_path: filePath,
+        }));
 
-        const imageData = await Promise.all(uploadPromises);
         const { error: imagesError } = await supabase
           .from("community_post_images")
           .insert(imageData);

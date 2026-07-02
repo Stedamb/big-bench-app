@@ -17,6 +17,8 @@ const Guestbook = lazy(() => import("./pages/Guestbook.tsx"));
 const BenchDetailPage = lazy(() => import("./pages/BenchDetailPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
+const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Cookies = lazy(() => import("./pages/Cookies.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
@@ -46,6 +48,8 @@ const AnimatedRoutes = () => {
           }
         />
         <Route path="/bench/:id" element={<PageTransition><BenchDetailPage /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+        <Route path="/cookies" element={<PageTransition><Cookies /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>

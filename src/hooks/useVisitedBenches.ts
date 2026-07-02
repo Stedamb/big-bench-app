@@ -40,12 +40,16 @@ export const useVisitedBenches = () => {
       const cloudIds = data.map((r) => r.bench_id);
       const toUpload = local.filter((id) => !cloudIds.includes(id));
       if (toUpload.length > 0) {
-        await supabase.from("visited_benches").insert(
-          toUpload.map((bench_id) => ({ user_id: user.id, bench_id }))
+        const { error: uploadError } = await supabase.from("visited_benches").upsert(
+          toUpload.map((bench_id) => ({ user_id: user.id, bench_id })),
+          { onConflict: "user_id,bench_id" }
         );
         if (cancelled) return;
-        // Clear local once merged
-        localStorage.removeItem(LOCAL_KEY);
+        // Only clear local once the merge is confirmed persisted, so a
+        // failed/partial upload never silently destroys guest visit history.
+        if (!uploadError) {
+          localStorage.removeItem(LOCAL_KEY);
+        }
       }
 
       const merged = Array.from(new Set([...cloudIds, ...local]));
@@ -73,16 +77,21 @@ export const useVisitedBenches = () => {
       });
 
       if (user) {
-        if (isVisited) {
-          await supabase
-            .from("visited_benches")
-            .delete()
-            .eq("user_id", user.id)
-            .eq("bench_id", id);
-        } else {
-          await supabase
-            .from("visited_benches")
-            .insert({ user_id: user.id, bench_id: id });
+        const { error } = isVisited
+          ? await supabase
+              .from("visited_benches")
+              .delete()
+              .eq("user_id", user.id)
+              .eq("bench_id", id)
+          : await supabase
+              .from("visited_benches")
+              .insert({ user_id: user.id, bench_id: id });
+
+        if (error) {
+          // Roll back the optimistic update so UI and DB don't silently diverge.
+          setVisitedIds((prev) =>
+            isVisited ? [...prev, id] : prev.filter((v) => v !== id)
+          );
         }
       } else {
         // next is set synchronously inside setVisitedIds updater above
