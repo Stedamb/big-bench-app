@@ -4,8 +4,8 @@ import { useTheme } from "next-themes";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import MarkerClusterGroup from "react-leaflet-cluster";
-import "react-leaflet-cluster/lib/assets/MarkerCluster.css";
-import "react-leaflet-cluster/lib/assets/MarkerCluster.Default.css";
+import "react-leaflet-cluster/dist/assets/MarkerCluster.css";
+import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css";
 import { Crosshair } from "lucide-react";
 import { toast } from "sonner";
 import { type Bench } from "@/hooks/useBenches";
@@ -228,7 +228,8 @@ function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, ope
 
   return (
     <MarkerClusterGroup
-      // react-leaflet-cluster@2.1.0's prop-update handler is a no-op, so
+      // react-leaflet-cluster's prop-update handler is still an unimplemented
+      // //TODO as of 3.1.1, so
       // changing disableClusteringAtZoom on an existing instance has no
       // effect; force a remount by keying on the value it should take.
       key={disableClusteringAtZoom}
