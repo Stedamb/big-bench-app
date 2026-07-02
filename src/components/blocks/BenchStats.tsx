@@ -44,7 +44,7 @@ const BenchStats = ({ bench, visited, className = "", variant = "grid" }: BenchS
       </div>
       <div className="text-center">
         <Calendar className="w-4 h-4 mx-auto text-muted-foreground mb-1" />
-        <p className="text-sm font-bold">{bench.installed_on ? new Date(bench.installed_on).getFullYear() : "—"}</p>
+        <p className="text-sm font-bold">{bench.installed_on ? parseLocalDate(bench.installed_on).getFullYear() : "—"}</p>
         <p className="text-[10px] text-muted-foreground">Installata</p>
       </div>
       <div className="text-center">

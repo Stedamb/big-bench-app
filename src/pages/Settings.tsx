@@ -87,13 +87,13 @@ const Settings = () => {
     setSaving(true);
     const { error } = await supabase
       .from("profiles")
-      .update({
+      .upsert({
+        id: user.id,
         display_name: parsed.data.display_name,
         username: parsed.data.username || null,
         bio: parsed.data.bio || null,
         avatar_url: parsed.data.avatar_url || null,
-      })
-      .eq("id", user.id);
+      });
     setSaving(false);
     if (error) {
       if (error.code === "23505") toast.error("Username già in uso");
@@ -121,7 +121,7 @@ const Settings = () => {
     setUploading(true);
     try {
       const fileExt = file.name.split(".").pop();
-      const filePath = `avatars/${user.id}.${fileExt}`;
+      const filePath = `avatars/${user.id}/avatar.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("bench-photos")
@@ -184,6 +184,7 @@ const Settings = () => {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploading}
+                aria-label="Carica foto profilo"
                 className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 {uploading ? (
@@ -207,6 +208,33 @@ const Settings = () => {
           </div>
 
           <div className="editorial-rule" />
+
+          <div className="space-y-1.5">
+            <Label htmlFor="display_name" className="text-xs uppercase tracking-wider">
+              Nome
+            </Label>
+            <Input
+              id="display_name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Il tuo nome"
+              maxLength={100}
+              required
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="username" className="text-xs uppercase tracking-wider">
+              Username
+            </Label>
+            <Input
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="username"
+              maxLength={40}
+            />
+          </div>
 
           <div className="space-y-1.5">
             <Label htmlFor="bio" className="text-xs uppercase tracking-wider">

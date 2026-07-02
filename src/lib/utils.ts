@@ -27,28 +27,3 @@ export function parseLocalDate(dateStr: string): Date {
 
   throw new Error(`Unsupported date format: ${dateStr}. Expected YYYY-MM-DD or ISO datetime.`);
 }
-
-export const regionTranslation: Record<string, string> = {
-  "Piedmont": "Piemonte",
-  "Lombardy": "Lombardia",
-  "Tuscany": "Toscana",
-  "Sicily": "Sicilia",
-  "Sardinia": "Sardegna",
-  "Apulia": "Puglia",
-  "Aosta Valley": "Valle d'Aosta",
-  "Marche": "Marche",
-  "Basilicata": "Basilicata",
-  "Abruzzo": "Abruzzo",
-  "Friuli-Venezia Giulia": "Friuli-Venezia Giulia",
-  "Trentino-Alto Adige": "Trentino-Alto Adige",
-  "Lazio": "Lazio",
-  "Molise": "Molise",
-  "Umbria": "Umbria",
-  "Veneto": "Veneto",
-  "Liguria": "Liguria",
-  "Calabria": "Calabria",
-  "Emilia-Romagna": "Emilia-Romagna",
-  "Campania": "Campania",
-};
-
-export const translateRegion = (region: string) => regionTranslation[region] || region;

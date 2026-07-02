@@ -12,9 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Env files (see .env.example for the required variables)
+.env
+.env.*
+!.env.example
+
 # Lock files (pnpm is the package manager)
 bun.lock
 bun.lockb
+package-lock.json
 
 # Editor directories and files
 .vscode/*
