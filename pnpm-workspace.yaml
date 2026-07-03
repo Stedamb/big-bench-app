@@ -1,0 +1,11 @@
+# pnpm 11 settings (the `pnpm` field in package.json is no longer read).
+# vite is excluded from the supply-chain minimum-release-age check: 8.1.3 was
+# adopted deliberately in commit fc12501 the day it was published.
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+minimumReleaseAgeExclude:
+  - vite
+allowBuilds:
+  '@swc/core': true
+  esbuild: true

@@ -86,6 +86,7 @@ const Index = () => {
               setOpenPopupId(null);
             }}
             openPopupId={openPopupId}
+            onPopupClose={(id) => setOpenPopupId((cur) => (cur === id ? null : cur))}
             isDrawerOpen={!!selectedBench}
             initialZoom={8}
           />

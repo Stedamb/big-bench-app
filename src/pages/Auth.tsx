@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { ArrowLeft, Loader2, Mail, Mountain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { isNativeApp, signInWithGoogleNative } from "@/lib/nativeAuth";
 import { useAuth } from "@/contexts/AuthContext";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -74,19 +75,31 @@ const Auth = () => {
 
   const handleGoogle = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin,
-      },
-    });
-    
-    if (error) {
-      toast.error("Accesso Google fallito: " + error.message);
+    try {
+      if (isNativeApp()) {
+        // WebView OAuth is blocked by Google: go through the system browser
+        // and return via deep link. Loading resets because the user stays on
+        // this screen while the browser is up; AuthContext picks up the
+        // session when the callback lands.
+        await signInWithGoogleNative();
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+      // Supabase signInWithOAuth redirects the window, so we don't need to navigate manually
+    } catch (err) {
+      toast.error(
+        "Accesso Google fallito: " + (err instanceof Error ? err.message : "errore sconosciuto")
+      );
       setLoading(false);
-      return;
     }
-    // Supabase signInWithOAuth redirects the window, so we don't need to navigate manually
   };
 
   return (
