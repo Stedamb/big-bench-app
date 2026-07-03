@@ -12,7 +12,30 @@ export interface GoogleReview {
   published_at: string | null;
 }
 
+export interface CachedGoogleReview extends GoogleReview {
+  benches: { name: string } | null;
+}
+
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // matches the Edge Function TTL
+
+// Cross-bench feed for the Guestbook: reads only what bench-page visits have
+// already cached. Never invokes the Edge Function, so it costs zero Google
+// API calls no matter how often the Guestbook is opened.
+export const useCachedGoogleReviews = (limit = 50) => {
+  return useQuery({
+    queryKey: ["google-reviews-feed", limit],
+    staleTime: 1000 * 60 * 60,
+    queryFn: async (): Promise<CachedGoogleReview[]> => {
+      const { data, error } = await supabase
+        .from("google_reviews")
+        .select("*, benches:bench_id (name)")
+        .order("published_at", { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return (data ?? []) as CachedGoogleReview[];
+    },
+  });
+};
 
 export const useGoogleReviews = (benchId?: number) => {
   const queryClient = useQueryClient();
