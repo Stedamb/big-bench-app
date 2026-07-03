@@ -16,6 +16,10 @@ const corsHeaders = {
 
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
+// The API key is website-restricted to the app's domains, so server-side
+// calls must present a matching Referer to be accepted.
+const GOOGLE_REFERER = "https://bigbench.app/";
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -89,6 +93,7 @@ Deno.serve(async (req) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "Referer": GOOGLE_REFERER,
             "X-Goog-Api-Key": apiKey,
             "X-Goog-FieldMask": "places.id",
           },
@@ -116,7 +121,13 @@ Deno.serve(async (req) => {
     if (placeId) {
       const detailsRes = await fetch(
         `https://places.googleapis.com/v1/places/${placeId}?languageCode=it`,
-        { headers: { "X-Goog-Api-Key": apiKey, "X-Goog-FieldMask": "reviews" } },
+        {
+          headers: {
+            "Referer": GOOGLE_REFERER,
+            "X-Goog-Api-Key": apiKey,
+            "X-Goog-FieldMask": "reviews",
+          },
+        },
       );
       if (!detailsRes.ok) {
         console.error("Place details failed", await detailsRes.text());

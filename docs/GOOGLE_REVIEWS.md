@@ -44,6 +44,10 @@ supabase functions deploy fetch-google-reviews
 supabase db push                                  # applies the migration
 ```
 
+The key is website-restricted to the app's domains, so the Edge Function
+sends `Referer: https://bigbench.app/` on its Google calls to satisfy the
+restriction (see `GOOGLE_REFERER` in the function).
+
 ## Cost
 
 New Places API pricing (per-SKU free tiers, since March 2025):
