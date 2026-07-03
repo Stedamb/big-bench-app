@@ -44,6 +44,63 @@ export type Database = {
         }
         Relationships: []
       }
+      google_review_sync: {
+        Row: {
+          bench_id: number
+          fetched_at: string
+          place_id: string | null
+        }
+        Insert: {
+          bench_id: number
+          fetched_at?: string
+          place_id?: string | null
+        }
+        Update: {
+          bench_id?: number
+          fetched_at?: string
+          place_id?: string | null
+        }
+        Relationships: []
+      }
+      google_reviews: {
+        Row: {
+          author_name: string
+          author_photo_url: string | null
+          bench_id: number
+          content: string | null
+          created_at: string
+          google_review_name: string | null
+          id: string
+          published_at: string | null
+          rating: number | null
+          relative_time: string | null
+        }
+        Insert: {
+          author_name: string
+          author_photo_url?: string | null
+          bench_id: number
+          content?: string | null
+          created_at?: string
+          google_review_name?: string | null
+          id?: string
+          published_at?: string | null
+          rating?: number | null
+          relative_time?: string | null
+        }
+        Update: {
+          author_name?: string
+          author_photo_url?: string | null
+          bench_id?: number
+          content?: string | null
+          created_at?: string
+          google_review_name?: string | null
+          id?: string
+          published_at?: string | null
+          rating?: number | null
+          relative_time?: string | null
+        }
+        Relationships: []
+      }
       visited_benches: {
         Row: {
           bench_id: number
