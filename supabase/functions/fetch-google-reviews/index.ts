@@ -70,23 +70,44 @@ Deno.serve(async (req) => {
       return json({ reviews: cached ?? [], cached: true });
     }
 
-    const { data: bench } = await supabase
-      .from("benches")
-      .select("name, location, lat, lng")
-      .eq("id", benchId)
-      .maybeSingle();
-    if (!bench) {
-      return json({ error: "Bench not found" }, 404);
-    }
-
     const apiKey = Deno.env.get("GOOGLE_MAPS_API_KEY");
     if (!apiKey) {
       return json({ error: "GOOGLE_MAPS_API_KEY is not configured" }, 500);
     }
 
+    // Claim the refresh slot before calling Google: concurrent stale requests
+    // (or a client hammering the endpoint with the anon key) see a fresh sync
+    // row and short-circuit above instead of stampeding the quota-limited
+    // Places API. Restored via releaseClaim() if the refresh fails.
+    await supabase.from("google_review_sync").upsert({
+      bench_id: benchId,
+      place_id: sync?.place_id ?? null,
+      fetched_at: new Date().toISOString(),
+    });
+    const releaseClaim = async () => {
+      if (sync) {
+        await supabase.from("google_review_sync").upsert({
+          bench_id: benchId,
+          place_id: sync.place_id,
+          fetched_at: sync.fetched_at,
+        });
+      } else {
+        await supabase.from("google_review_sync").delete().eq("bench_id", benchId);
+      }
+    };
+
     // Resolve the Place ID once, then reuse it on later refreshes.
     let placeId: string | null = sync?.place_id ?? null;
     if (!placeId) {
+      const { data: bench } = await supabase
+        .from("benches")
+        .select("name, lat, lng")
+        .eq("id", benchId)
+        .maybeSingle();
+      if (!bench) {
+        await releaseClaim();
+        return json({ error: "Bench not found" }, 404);
+      }
       const searchRes = await fetch(
         "https://places.googleapis.com/v1/places:searchText",
         {
@@ -111,6 +132,7 @@ Deno.serve(async (req) => {
       );
       if (!searchRes.ok) {
         console.error("Places searchText failed", await searchRes.text());
+        await releaseClaim();
         return json({ error: "Google Places search failed" }, 502);
       }
       const search = await searchRes.json();
@@ -131,6 +153,7 @@ Deno.serve(async (req) => {
       );
       if (!detailsRes.ok) {
         console.error("Place details failed", await detailsRes.text());
+        await releaseClaim();
         return json({ error: "Google Place details failed" }, 502);
       }
       const details = await detailsRes.json();
@@ -148,15 +171,20 @@ Deno.serve(async (req) => {
           google_review_name: r.name ?? null,
         }));
 
-      // Replace the cached set atomically enough for our purposes: Google
-      // returns at most 5 reviews, so a delete + insert keeps it simple.
+      // Replace the cached set: Google returns at most 5 reviews. The upsert
+      // (vs plain insert) makes a residual concurrent refresh of the same
+      // bench converge instead of failing on the per-bench unique constraint.
       await supabase.from("google_reviews").delete().eq("bench_id", benchId);
       if (rows.length > 0) {
         const { data: inserted, error: insertError } = await supabase
           .from("google_reviews")
-          .insert(rows)
+          .upsert(rows, { onConflict: "bench_id,google_review_name" })
           .select();
-        if (insertError) throw insertError;
+        if (insertError) {
+          console.error("google_reviews upsert failed", insertError);
+          await releaseClaim();
+          return json({ error: "Failed to cache reviews" }, 500);
+        }
         reviews = inserted ?? [];
       }
     }
