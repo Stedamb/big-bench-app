@@ -13,6 +13,7 @@ A modern web application to discover, track, and visit the Big Benches (Panchine
 - **Frontend**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui.
 - **Maps**: Leaflet, React-Leaflet.
 - **Data**: Supabase (PostgreSQL), TanStack Query.
+- **Mobile**: Capacitor (Android) wrapping the same web frontend — see below.
 
 ## 🚀 Getting Started
 
@@ -24,7 +25,7 @@ cd BigBenchApp
 
 ### 2. Install dependencies
 ```bash
-npm install
+pnpm install
 ```
 
 ### 3. Environment Setup
@@ -41,8 +42,54 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
 
 ### 5. Run development server
 ```bash
-npm run dev
+pnpm dev
 ```
+
+## 📱 Mobile App (Android)
+
+The native Android app is the **same web frontend** wrapped with
+[Capacitor](https://capacitorjs.com) (`capacitor.config.ts`, `android/`) —
+every feature shipped on the web lands in the app on the next sync, no
+separate mobile codebase.
+
+### Build & install
+
+Requires the Android SDK (Android Studio, or
+`brew install --cask android-commandlinetools`) and a JDK — Android Studio's
+bundled one works:
+
+```bash
+pnpm cap:sync        # vite build + copy web assets into android/
+cd android
+JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
+  ./gradlew assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+Or `pnpm cap:android` to build, sync, and run on a connected device in one
+step. Gradle reads the SDK path from `android/local.properties`
+(`sdk.dir=...`, machine-specific, not committed).
+
+### Native specifics
+
+- **Google OAuth** cannot run inside the WebView (Google blocks it): on
+  native, `src/lib/nativeAuth.ts` opens the system browser and returns via
+  the `app.bigbench://auth-callback` deep link (PKCE code exchange). That
+  redirect URL must be listed in Supabase → Authentication → URL
+  Configuration, and is registered as an intent-filter in
+  `android/app/src/main/AndroidManifest.xml`.
+- **Geolocation** for the map's locate-me control works through the WebView;
+  the required permissions are declared in the manifest.
+- **iOS** is not set up yet — `npx cap add ios` (needs Xcode), then mirror
+  the deep-link scheme in `Info.plist`.
+
+### `mobile/` — superseded Expo app
+
+`mobile/` contains a working React Native (Expo) port built as a proof of
+concept before the Capacitor decision. It is **not maintained** — kept only
+as reference for a possible future fully-native track. See
+`docs/brainstorms/2026-07-02-expo-port-requirements.md` for the decision
+history.
 
 ## 📂 Data Sources
 This project uses data inspired by the Big Bench Community Project. The data is synchronized from GeoJSON sources and enriched with automated color extraction tools.

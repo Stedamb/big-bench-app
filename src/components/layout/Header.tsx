@@ -87,7 +87,7 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="rounded-full focus:outline-none">
+                  <button className="rounded-full focus:outline-none" aria-label="Apri menu utente">
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="Avatar" />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">

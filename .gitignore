@@ -12,9 +12,16 @@ dist
 dist-ssr
 *.local
 
-# Lock files (pnpm is the package manager)
+# Env files (see .env.example for the required variables)
+.env
+.env.*
+!.env.example
+
+# Lock files (pnpm is the package manager; the mobile/ reference app is npm-managed)
 bun.lock
 bun.lockb
+package-lock.json
+!mobile/package-lock.json
 
 # Editor directories and files
 .vscode/*

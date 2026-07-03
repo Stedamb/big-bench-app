@@ -27,7 +27,6 @@ import {
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { parseLocalDate } from "@/lib/utils";
 import { useVisitedBenches } from "@/hooks/useVisitedBenches";
 import { useBench } from "@/hooks/useBenches";
 import VisitedButton from "@/components/blocks/VisitedButton";
@@ -54,7 +53,7 @@ const Stars = ({ value, onSelect }: { value: number; onSelect?: (v: number) => v
         className={`w-3.5 h-3.5 ${
           i < value ? "fill-primary text-primary" : "text-muted-foreground/40"
         } ${onSelect ? "cursor-pointer" : ""}`}
-        onClick={() => onSelect?.(i + 1)}
+        onClick={() => onSelect?.(value === i + 1 ? 0 : i + 1)}
       />
     ))}
   </div>
@@ -94,7 +93,7 @@ const BenchDetailPage = () => {
   // New post state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newContent, setNewContent] = useState("");
-  const [newRating, setNewRating] = useState(5);
+  const [newRating, setNewRating] = useState(0);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -143,12 +142,13 @@ const BenchDetailPage = () => {
     await createPost.mutateAsync({
       benchId: bench.id,
       content: newContent,
-      rating: newRating,
+      rating: newRating || undefined,
       imageFiles: selectedFiles,
     });
 
     setIsDialogOpen(false);
     setNewContent("");
+    setNewRating(0);
     setSelectedFiles([]);
   };
 

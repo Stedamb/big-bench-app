@@ -266,7 +266,7 @@ const ProgressPage = () => {
                             className="shrink-0 h-8 w-8"
                             asChild
                           >
-                            <Link to={`/bench/${bench.id}`}>
+                            <Link to={`/bench/${bench.id}`} aria-label="Vedi dettagli panchina">
                               <ExternalLink className="w-3.5 h-3.5" />
                             </Link>
                           </Button>

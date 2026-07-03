@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import PageTransition from "@/components/layout/PageTransition";
+import { useNativeAuthCallback } from "@/lib/nativeAuth";
 
 // Lazy-loaded routes — each page is split into its own JS chunk
 const Index = lazy(() => import("./pages/Index.tsx"));
@@ -17,12 +18,15 @@ const Guestbook = lazy(() => import("./pages/Guestbook.tsx"));
 const BenchDetailPage = lazy(() => import("./pages/BenchDetailPage.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Settings = lazy(() => import("./pages/Settings.tsx"));
+const Privacy = lazy(() => import("./pages/Privacy.tsx"));
+const Cookies = lazy(() => import("./pages/Cookies.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 const queryClient = new QueryClient();
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  useNativeAuthCallback();
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
@@ -46,6 +50,8 @@ const AnimatedRoutes = () => {
           }
         />
         <Route path="/bench/:id" element={<PageTransition><BenchDetailPage /></PageTransition>} />
+        <Route path="/privacy" element={<PageTransition><Privacy /></PageTransition>} />
+        <Route path="/cookies" element={<PageTransition><Cookies /></PageTransition>} />
         <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
       </Routes>
     </AnimatePresence>
