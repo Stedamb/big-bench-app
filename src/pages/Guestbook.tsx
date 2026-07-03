@@ -1,8 +1,13 @@
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Camera, MapPin, MessageSquare, Star, Loader2 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useGuestbook, type GuestbookPost } from "@/hooks/useGuestbook";
+import {
+  useCachedGoogleReviews,
+  type CachedGoogleReview,
+} from "@/hooks/useGoogleReviews";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -93,8 +98,75 @@ const PostCard = ({ post }: { post: GuestbookPost }) => {
   );
 };
 
+const GoogleReviewCard = ({ review }: { review: CachedGoogleReview }) => (
+  <Card className="overflow-hidden border-none bg-card shadow-sm">
+    <CardHeader className="p-4 flex flex-row items-center gap-3 space-y-0">
+      <Avatar className="w-10 h-10 border border-border/50">
+        <AvatarImage src={review.author_photo_url || ""} referrerPolicy="no-referrer" />
+        <AvatarFallback className="text-xs bg-muted text-muted-foreground font-bold font-display">
+          {review.author_name.slice(0, 2).toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-display font-bold truncate leading-none">
+            {review.author_name}
+          </p>
+          {review.rating != null && <Stars value={review.rating} />}
+          <span className="text-[9px] uppercase tracking-widest font-bold text-muted-foreground border border-border/60 rounded-sm px-1.5 py-0.5">
+            Google
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
+          <time>{review.relative_time}</time>
+          <span>·</span>
+          <Link
+            to={`/bench/${review.bench_id}`}
+            className="font-bold text-primary hover:underline flex items-center gap-1"
+          >
+            <MapPin className="w-2.5 h-2.5" />
+            {review.benches?.name || `Bench No. ${review.bench_id}`}
+          </Link>
+        </div>
+      </div>
+    </CardHeader>
+
+    {review.content && (
+      <CardContent className="p-4 pt-3">
+        <p className="font-editorial text-base leading-relaxed text-foreground/90">
+          {review.content}
+        </p>
+      </CardContent>
+    )}
+
+    <CardFooter className="p-4 pt-0">
+      <span className="text-[10px] text-muted-foreground italic">Powered by Google</span>
+    </CardFooter>
+  </Card>
+);
+
+type TimelineItem =
+  | { type: "post"; date: string; post: GuestbookPost }
+  | { type: "google"; date: string; review: CachedGoogleReview };
+
 const Guestbook = () => {
   const { posts, isLoading } = useGuestbook();
+  // Cached reviews only — this never triggers a Google API call.
+  const { data: googleReviews = [] } = useCachedGoogleReviews();
+
+  const timeline = useMemo<TimelineItem[]>(() => {
+    const items: TimelineItem[] = [
+      ...posts.map((p) => ({ type: "post" as const, date: p.created_at, post: p })),
+      ...googleReviews.map((r) => ({
+        type: "google" as const,
+        date: r.published_at ?? "",
+        review: r,
+      })),
+    ];
+    return items.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  }, [posts, googleReviews]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -137,7 +209,7 @@ const Guestbook = () => {
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
               <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold">Sintonizzazione...</p>
             </div>
-          ) : posts.length === 0 ? (
+          ) : timeline.length === 0 ? (
             <div className="text-center py-24 border-2 border-dashed border-border/60 rounded-xl bg-card/50">
               <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground/20 mb-4" />
               <h3 className="font-display text-xl font-bold mb-2">Nessun messaggio trovato</h3>
@@ -150,9 +222,13 @@ const Guestbook = () => {
             </div>
           ) : (
             <div className="max-w-2xl mx-auto space-y-6">
-              {posts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
+              {timeline.map((item) =>
+                item.type === "post" ? (
+                  <PostCard key={item.post.id} post={item.post} />
+                ) : (
+                  <GoogleReviewCard key={item.review.id} review={item.review} />
+                ),
+              )}
             </div>
           )}
         </div>

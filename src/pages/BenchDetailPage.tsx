@@ -38,7 +38,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -241,20 +240,11 @@ const BenchDetailPage = () => {
         {/* Left column — main */}
         <div className="lg:col-span-2 space-y-12">
 
-          {/* Photos */}
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
-                Galleria del Guestbook
-              </h2>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button size="sm" variant="outline" className="gap-1.5 h-8">
-                    <Upload className="w-3.5 h-3.5" />
-                    Carica foto
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+          {/* New post dialog — rendered unconditionally so both the gallery's
+              "Carica foto" and the guestbook's "Lascia un messaggio" buttons
+              can open it, even when the gallery section is hidden. */}
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-[425px]">
                   <DialogHeader>
                     <DialogTitle className="font-display text-xl">Firma il Guestbook</DialogTitle>
                   </DialogHeader>
@@ -311,20 +301,36 @@ const BenchDetailPage = () => {
                     {createPost.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
                     Invia messaggio
                   </Button>
-                </DialogContent>
-              </Dialog>
-            </div>
+            </DialogContent>
+          </Dialog>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {communityPhotos.length > 0 ? (
-                communityPhotos.map((p, i) => (
+          {/* Photos — section hidden entirely until the guestbook has photos */}
+          {communityPhotos.length > 0 && (
+            <section>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-display text-xs uppercase tracking-[0.25em] text-muted-foreground">
+                  Galleria del Guestbook
+                </h2>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-1.5 h-8"
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  Carica foto
+                </Button>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {communityPhotos.map((p, i) => (
                   <div
                     key={p.id}
                     className="relative aspect-square rounded-md overflow-hidden bg-muted border border-border group"
                   >
-                    <img 
-                      src={p.image_url!} 
-                      alt={`Bench detail ${i}`} 
+                    <img
+                      src={p.image_url!}
+                      alt={`Bench detail ${i}`}
                       loading="lazy"
                       className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
                     />
@@ -334,27 +340,10 @@ const BenchDetailPage = () => {
                       </p>
                     </div>
                   </div>
-                ))
-              ) : (
-                Array.from({ length: 6 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="relative aspect-square rounded-md overflow-hidden bg-muted border border-border group"
-                  >
-                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/40">
-                      <Camera className="w-8 h-8" />
-                    </div>
-                    <div
-                      className="absolute inset-0 opacity-20"
-                      style={{
-                        background: `linear-gradient(135deg, ${primaryColor} 0%, transparent 100%)`,
-                      }}
-                    />
-                  </div>
-                ))
-              )}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Reviews */}
           <section>
