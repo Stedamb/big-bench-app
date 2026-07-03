@@ -44,6 +44,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { translateRegion } from "@/lib/constants";
 import NavigationButtons from "@/components/blocks/NavigationButtons";
+import GoogleReviews from "@/components/blocks/GoogleReviews";
 
 const Stars = ({ value, onSelect }: { value: number; onSelect?: (v: number) => void }) => (
   <div className="flex items-center gap-0.5">
@@ -419,6 +420,9 @@ const BenchDetailPage = () => {
               )}
             </div>
           </section>
+
+          {/* Google Reviews */}
+          <GoogleReviews benchId={bench.id} />
         </div>
 
         {/* Right column — sidebar */}
