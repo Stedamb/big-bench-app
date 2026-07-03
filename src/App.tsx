@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/layout/ProtectedRoute";
 import PageTransition from "@/components/layout/PageTransition";
+import { useNativeAuthCallback } from "@/lib/nativeAuth";
 
 // Lazy-loaded routes — each page is split into its own JS chunk
 const Index = lazy(() => import("./pages/Index.tsx"));
@@ -25,6 +26,7 @@ const queryClient = new QueryClient();
 
 const AnimatedRoutes = () => {
   const location = useLocation();
+  useNativeAuthCallback();
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
