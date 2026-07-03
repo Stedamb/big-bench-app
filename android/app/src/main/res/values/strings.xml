@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">BigBenchApp</string>
+    <string name="title_activity_main">BigBenchApp</string>
+    <string name="package_name">app.bigbench</string>
+    <string name="custom_url_scheme">app.bigbench</string>
+</resources>
