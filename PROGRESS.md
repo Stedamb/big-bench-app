@@ -1,3 +1,26 @@
+# Project Progress - Session July 3, 2026
+
+## 🚀 Overview
+Shipped Google reviews on bench detail pages end-to-end (plan from the May `google-reviews` branch, rebuilt on the new Places API), and applied the previously-unapplied security migration to production.
+
+## ✅ Completed Features
+
+### 1. Google Reviews on Bench Pages
+- **"Recensioni da Google" section** on `BenchDetailPage`, below the Guestbook: author avatar, star rating, localized relative date, review text, "Powered by Google" attribution. Hidden for benches with no match.
+- **Fetch-on-demand + 30-day cache**: `useGoogleReviews` reads cached rows from Postgres; stale data triggers the `fetch-google-reviews` Edge Function (stale-while-revalidate). Place IDs resolved once via free IDs-only Text Search; reviews via Place Details (1,000 free calls/month, usage bounded by bench count thanks to the TTL).
+- **Hardened after code review**: refresh-slot claiming prevents cache stampedes and anon-key quota abuse; per-bench unique constraint + upsert handle two benches sharing one Google place; negative caching for unmatched benches.
+- **Key handling**: API key lives in Supabase secrets, website-restricted in Google Cloud; the function sends the app-domain `Referer` to satisfy the restriction. Full docs in `docs/GOOGLE_REVIEWS.md`.
+
+### 2. Infrastructure Reconciliation
+- **Supabase CLI onboarded**: installed, linked to the real project (`oznxvjfmjvuaircepkzz` — `config.toml` pointed at a nonexistent ref), migration history repaired so `supabase db push` works normally.
+- **Security fixes applied to production**: discovered the merged PR #13 migration (avatar path takeover, bucket MIME/size limits, likes/comments RLS, visited_benches FK) had never been applied to the live DB; it now is.
+
+## 📋 Remaining Tasks
+- [ ] Regenerate the Google API key (exposed in a chat session) and `supabase secrets set` the new one.
+- [ ] Cleanup debt: dedupe the `Stars` component (`GoogleReviews.tsx` vs `BenchDetailPage.tsx`); single source for the 30-day TTL constant.
+
+---
+
 # Project Progress - Session May 13, 2026
 
 ## 🚀 Overview
