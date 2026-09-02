@@ -67,11 +67,24 @@ const locationIcon = L.divIcon({
   iconAnchor: [8, 8],
 });
 
+// CARTO basemaps require an API key as of 2026; unauthenticated tiles come
+// back stamped "API KEY REQUIRED". The free tier (5M tiles/month) is enough
+// for this app. Key is website-restricted, so shipping it to the client is
+// expected. See https://carto.com/basemaps/apikey
+const CARTO_ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+
+const cartoTileUrl = (style: "light_all" | "dark_all") => {
+  const key = import.meta.env.VITE_CARTO_API_KEY;
+  const base = `https://{s}.basemaps.cartocdn.com/${style}/{z}/{x}/{y}.png`;
+  return key ? `${base}?key=${key}` : base;
+};
+
 function DarkTileLayer() {
   return (
     <TileLayer
-      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-      url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+      attribution={CARTO_ATTRIBUTION}
+      url={cartoTileUrl("dark_all")}
       subdomains="abcd"
       maxZoom={20}
     />
@@ -81,8 +94,8 @@ function DarkTileLayer() {
 function LightTileLayer() {
   return (
     <TileLayer
-      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-      url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+      attribution={CARTO_ATTRIBUTION}
+      url={cartoTileUrl("light_all")}
       subdomains="abcd"
       maxZoom={20}
     />
