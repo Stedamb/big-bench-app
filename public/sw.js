@@ -1,4 +1,4 @@
-const CACHE = "tiles-v2";
+const CACHE = "tiles-v3";
 const TILE_HOSTS = ["basemaps.cartocdn.com", "tile.openstreetmap.org"];
 const MAX_ENTRIES = 500;
 

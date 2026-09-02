@@ -17,6 +17,14 @@ const INITIAL_REGION = {
   longitudeDelta: 6,
 };
 
+// CARTO basemaps require an API key as of 2026 (free tier: 5M tiles/month);
+// unauthenticated tiles render with an "API KEY REQUIRED" watermark.
+const CARTO_TILE_URL = (() => {
+  const key = process.env.EXPO_PUBLIC_CARTO_API_KEY;
+  const base = "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png";
+  return key ? `${base}?key=${key}` : base;
+})();
+
 export default function MapScreen() {
   const { data: benches = [], isLoading, error } = useBenches();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -59,7 +67,7 @@ export default function MapScreen() {
             key since SDK 53. A store build should switch to native tiles with a
             real API key (roadmap phase 1). */}
         <UrlTile
-          urlTemplate="https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+          urlTemplate={CARTO_TILE_URL}
           maximumZ={19}
           shouldReplaceMapContent
         />
