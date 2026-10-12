@@ -9,6 +9,7 @@ import "react-leaflet-cluster/dist/assets/MarkerCluster.Default.css";
 import { Crosshair } from "lucide-react";
 import { toast } from "sonner";
 import { type Bench } from "@/hooks/useBenches";
+import { useIsMobile } from "@/hooks/use-mobile";
 import BenchPopup from "./BenchPopup";
 
 // Fix default marker icon
@@ -237,7 +238,13 @@ function MarkerWithPopup({
 function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, openPopupId, onPopupClose, initialZoom = 8 }: BenchMarkersProps & { initialZoom?: number }) {
   const visitedSet = useMemo(() => new Set(visitedIds), [visitedIds]);
 
-  const disableClusteringAtZoom = openPopupId ? Math.min(initialZoom, 10) : 9;
+  const isMobile = useIsMobile();
+
+  // Desktop viewports fit far more pins, so break groups apart earlier and
+  // merge only markers that are closer together on screen.
+  const clusterZoom = isMobile ? 9 : 7;
+  const disableClusteringAtZoom = openPopupId ? Math.min(initialZoom, 10) : clusterZoom;
+  const maxClusterRadius = isMobile ? 80 : 50;
 
   return (
     <MarkerClusterGroup
@@ -245,9 +252,10 @@ function BenchMarkers({ benches, visitedIds, onToggleVisited, onSelectBench, ope
       // //TODO as of 3.1.1, so
       // changing disableClusteringAtZoom on an existing instance has no
       // effect; force a remount by keying on the value it should take.
-      key={disableClusteringAtZoom}
+      key={`${disableClusteringAtZoom}-${maxClusterRadius}`}
       chunkedLoading
       disableClusteringAtZoom={disableClusteringAtZoom}
+      maxClusterRadius={maxClusterRadius}
     >
       {benches.map((bench) => (
         <MarkerWithPopup
