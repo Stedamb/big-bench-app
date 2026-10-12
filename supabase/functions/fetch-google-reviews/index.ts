@@ -20,6 +20,18 @@ const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 // calls must present a matching Referer to be accepted.
 const GOOGLE_REFERER = "https://bigbench.app/";
 
+// Prefer the new-style secret key (sb_secret_...): once the project's legacy
+// JWT keys are disabled, SUPABASE_SERVICE_ROLE_KEY is rejected by PostgREST.
+const serviceKey = (): string => {
+  try {
+    const secretKeys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
+    if (typeof secretKeys.default === "string") return secretKeys.default;
+  } catch {
+    // fall through to the legacy key
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+};
+
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
@@ -49,14 +61,21 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      serviceKey(),
     );
 
-    const { data: sync } = await supabase
+    // Check errors explicitly: a rejected key returns `data: null`, which
+    // would otherwise be indistinguishable from "no row" (and surface as a
+    // misleading 404 "Bench not found").
+    const { data: sync, error: syncError } = await supabase
       .from("google_review_sync")
       .select("place_id, fetched_at")
       .eq("bench_id", benchId)
       .maybeSingle();
+    if (syncError) {
+      console.error("google_review_sync read failed", syncError);
+      return json({ error: "Database read failed" }, 500);
+    }
 
     const isFresh = sync &&
       Date.now() - new Date(sync.fetched_at).getTime() < CACHE_TTL_MS;
@@ -79,11 +98,17 @@ Deno.serve(async (req) => {
     // (or a client hammering the endpoint with the anon key) see a fresh sync
     // row and short-circuit above instead of stampeding the quota-limited
     // Places API. Restored via releaseClaim() if the refresh fails.
-    await supabase.from("google_review_sync").upsert({
-      bench_id: benchId,
-      place_id: sync?.place_id ?? null,
-      fetched_at: new Date().toISOString(),
-    });
+    const { error: claimError } = await supabase
+      .from("google_review_sync")
+      .upsert({
+        bench_id: benchId,
+        place_id: sync?.place_id ?? null,
+        fetched_at: new Date().toISOString(),
+      });
+    if (claimError) {
+      console.error("google_review_sync claim failed", claimError);
+      return json({ error: "Database write failed" }, 500);
+    }
     const releaseClaim = async () => {
       if (sync) {
         await supabase.from("google_review_sync").upsert({
@@ -99,11 +124,16 @@ Deno.serve(async (req) => {
     // Resolve the Place ID once, then reuse it on later refreshes.
     let placeId: string | null = sync?.place_id ?? null;
     if (!placeId) {
-      const { data: bench } = await supabase
+      const { data: bench, error: benchError } = await supabase
         .from("benches")
         .select("name, lat, lng")
         .eq("id", benchId)
         .maybeSingle();
+      if (benchError) {
+        console.error("benches read failed", benchError);
+        await releaseClaim();
+        return json({ error: "Database read failed" }, 500);
+      }
       if (!bench) {
         await releaseClaim();
         return json({ error: "Bench not found" }, 404);
