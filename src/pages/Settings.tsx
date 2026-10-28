@@ -82,7 +82,7 @@ const Settings = () => {
       avatar_url: avatarUrl,
     });
     if (!parsed.success) {
-      return toast.error(parsed.error.errors[0].message);
+      return toast.error(parsed.error.issues[0].message);
     }
     setSaving(true);
     const { error } = await supabase
