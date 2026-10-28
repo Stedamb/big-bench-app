@@ -34,8 +34,8 @@ const Auth = () => {
     e.preventDefault();
     const emailParsed = emailSchema.safeParse(email);
     const passwordParsed = passwordSchema.safeParse(password);
-    if (!emailParsed.success) return toast.error(emailParsed.error.errors[0].message);
-    if (!passwordParsed.success) return toast.error(passwordParsed.error.errors[0].message);
+    if (!emailParsed.success) return toast.error(emailParsed.error.issues[0].message);
+    if (!passwordParsed.success) return toast.error(passwordParsed.error.issues[0].message);
 
     setLoading(true);
     try {
