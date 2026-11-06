@@ -22,7 +22,7 @@ const VisitedButton = ({ visited, onToggleVisited, className = "", benchId }: Vi
   const [confirming, setConfirming] = useState(false);
   const [visitKey, setVisitKey] = useState(0);
   const { playHaptic } = useHaptics();
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
     clearTimer();
