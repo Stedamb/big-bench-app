@@ -1,5 +1,7 @@
 # Big Bench App
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A modern web application to discover, track, and visit the Big Benches (Panchine Giganti) across Italy and Europe.
 
 ## ✨ Features
@@ -19,8 +21,8 @@ A modern web application to discover, track, and visit the Big Benches (Panchine
 
 ### 1. Clone the repo
 ```bash
-git clone <your-repo-url>
-cd BigBenchApp
+git clone https://github.com/Stedamb/big-bench-app.git
+cd big-bench-app
 ```
 
 ### 2. Install dependencies
@@ -93,6 +95,13 @@ history.
 
 ## 📂 Data Sources
 This project uses data inspired by the Big Bench Community Project. The data is synchronized from GeoJSON sources and enriched with automated color extraction tools.
+
+## 🤝 Contributing
+Issues and pull requests are welcome. Please open an issue first to discuss
+significant changes.
+
+## 📄 License
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 *Built with ❤️ for Big Bench enthusiasts.*
