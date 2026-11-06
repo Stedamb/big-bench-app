@@ -93,7 +93,7 @@ const Index = () => {
         </div>
 
         {/* Filters Overlay */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-[90%] sm:w-auto">
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-1000 w-[90%] sm:w-auto">
           <MapFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -113,17 +113,17 @@ const Index = () => {
         </div>
 
         {/* Progress overlay */}
-        <div className="absolute top-4 left-4 z-[1000] w-72 hidden lg:block">
+        <div className="absolute top-4 left-4 z-1000 w-72 hidden lg:block">
           <ProgressTracker visitedIds={visitedIds} benches={benches} isLoading={isFetching} />
         </div>
 
         {/* Mobile progress + GPS - bottom sheet style */}
         {!selectedBench && (
-          <div className="absolute bottom-4 left-4 right-4 z-[1000] lg:hidden flex flex-col gap-2">
+          <div className="absolute bottom-4 left-4 right-4 z-1000 lg:hidden flex flex-col gap-2">
             <div className="flex justify-end">
               <button
                 onClick={() => benchMapRef.current?.locate()}
-                className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-muted transition-colors"
+                className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-xs rounded-full shadow-xs border hover:bg-muted transition-colors"
                 aria-label="Trova la mia posizione"
               >
                 <Crosshair className="text-foreground" size={18} />

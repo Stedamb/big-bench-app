@@ -29,7 +29,7 @@ const PostCard = ({ post }: { post: GuestbookPost }) => {
   const hasImages = post.community_post_images && post.community_post_images.length > 0;
   
   return (
-    <Card className="overflow-hidden border-none bg-card shadow-sm group">
+    <Card className="overflow-hidden border-none bg-card shadow-xs group">
       <CardHeader className="p-4 flex flex-row items-center gap-3 space-y-0">
         <Avatar className="w-10 h-10 border border-border/50">
           <AvatarImage src={post.profiles?.avatar_url || ""} />
@@ -71,7 +71,7 @@ const PostCard = ({ post }: { post: GuestbookPost }) => {
             </div>
           ))}
           {post.community_post_images.length > 4 && (
-            <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-sm font-bold uppercase tracking-widest">
+            <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-xs text-white text-[10px] px-2 py-1 rounded-sm font-bold uppercase tracking-widest">
               +{post.community_post_images.length - 4} foto
             </div>
           )}
@@ -99,7 +99,7 @@ const PostCard = ({ post }: { post: GuestbookPost }) => {
 };
 
 const GoogleReviewCard = ({ review }: { review: CachedGoogleReview }) => (
-  <Card className="overflow-hidden border-none bg-card shadow-sm">
+  <Card className="overflow-hidden border-none bg-card shadow-xs">
     <CardHeader className="p-4 flex flex-row items-center gap-3 space-y-0">
       <Avatar className="w-10 h-10 border border-border/50">
         <AvatarImage src={review.author_photo_url || ""} referrerPolicy="no-referrer" />
@@ -179,7 +179,7 @@ const Guestbook = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mb-2 font-bold">Registro Esploratori</p>
-                <h1 className="text-4xl sm:text-5xl font-display font-bold leading-tight tracking-tight">
+                <h1 className="text-4xl sm:text-5xl font-display font-bold leading-tight sm:leading-none tracking-tight">
                   Guestbook
                 </h1>
               </div>

@@ -329,9 +329,9 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
   return (
     <div className="relative w-full h-full">
       {/* Desktop: indicators + GPS button */}
-      <div className="absolute top-4 right-4 z-[1001] hidden lg:flex items-center gap-2">
+      <div className="absolute top-4 right-4 z-1001 hidden lg:flex items-center gap-2">
         {isLoading && (
-          <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
+          <div className="bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-full shadow-xs border flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             <span className="text-xs font-medium text-muted-foreground">Aggiornamento...</span>
           </div>
@@ -339,7 +339,7 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
         <button
           onClick={handleLocate}
           disabled={locating}
-          className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-sm rounded-full shadow-sm border hover:bg-muted transition-colors disabled:opacity-50"
+          className="w-9 h-9 flex items-center justify-center bg-background/90 backdrop-blur-xs rounded-full shadow-xs border hover:bg-muted transition-colors disabled:opacity-50"
           aria-label="Trova la mia posizione"
         >
           {locating ? (
@@ -352,8 +352,8 @@ const BenchMap = forwardRef<BenchMapHandle, BenchMapProps>(({ benches, isLoading
 
       {/* Mobile: loading indicator */}
       {isLoading && (
-        <div className="absolute top-4 right-4 z-[1001] flex items-center lg:hidden">
-          <div className="bg-white/80 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm border flex items-center gap-2">
+        <div className="absolute top-4 right-4 z-1001 flex items-center lg:hidden">
+          <div className="bg-white/80 backdrop-blur-xs px-3 py-1.5 rounded-full shadow-xs border flex items-center gap-2">
             <div className="w-3 h-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
             <span className="text-xs font-medium text-muted-foreground">Aggiornamento...</span>
           </div>

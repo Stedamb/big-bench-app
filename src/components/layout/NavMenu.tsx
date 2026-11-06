@@ -52,14 +52,14 @@ const NavMenu = () => {
       </Drawer.Trigger>
 
       <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 z-[2000] bg-black/30 backdrop-blur-sm" />
+        <Drawer.Overlay className="fixed inset-0 z-2000 bg-black/30 backdrop-blur-xs" />
 
         <Drawer.Content
           className={cn(
-            "fixed top-0 right-0 bottom-0 z-[2001]",
+            "fixed top-0 right-0 bottom-0 z-2001",
             "w-[min(82vw,320px)] flex flex-col",
             "bg-background border-l border-border shadow-lg",
-            "outline-none"
+            "outline-hidden"
           )}
         >
           {/* Header */}

@@ -40,7 +40,7 @@ const Header = () => {
     .toUpperCase();
 
   return (
-    <header className="sticky top-0 z-[1000] border-b border-border bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-1000 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="container py-3 flex items-center justify-between">
 
         {/* Logo */}
@@ -87,7 +87,7 @@ const Header = () => {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="rounded-full focus:outline-none" aria-label="Apri menu utente">
+                  <button className="rounded-full focus:outline-hidden" aria-label="Apri menu utente">
                     <Avatar className="w-8 h-8">
                       <AvatarImage src={user.user_metadata?.avatar_url || user.user_metadata?.picture} alt="Avatar" />
                       <AvatarFallback className="bg-primary/10 text-primary text-xs font-medium">
@@ -96,7 +96,7 @@ const Header = () => {
                     </Avatar>
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56 z-[1100] border-0 shadow-lg">
+                <DropdownMenuContent align="end" className="w-56 z-1100 border-0 shadow-lg">
                   <DropdownMenuLabel>
                     <p className="font-medium text-sm truncate">
                       {userName || user.email?.split("@")[0] || "Utente"}

@@ -134,7 +134,7 @@ const Auth = () => {
             </p>
           </div>
 
-          <div className="bg-card border border-border rounded-md p-6 shadow-[var(--shadow-card)]">
+          <div className="bg-card border border-border rounded-md p-6 shadow-(--shadow-card)">
             <Button
               variant="outline"
               className="w-full h-11 gap-2"

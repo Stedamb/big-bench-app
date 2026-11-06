@@ -208,7 +208,7 @@ const BenchDetailPage = () => {
                   {translateRegion(bench.region)} {bench.province ? `· ${bench.province}` : ""}
                 </span>
               </div>
-              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight mb-3">
+              <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.05] sm:leading-none tracking-tight mb-3">
                 {bench.name}
               </h1>
               <p className="font-editorial italic text-lg text-muted-foreground flex items-center gap-2">

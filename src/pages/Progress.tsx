@@ -181,7 +181,7 @@ const ProgressPage = () => {
                         >
                           <Link to={`/bench/${bench.id}`} className="text-center group block">
                             <div
-                              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-2 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md"
+                              className="w-16 h-16 sm:w-20 sm:h-20 rounded-full mx-auto mb-2 flex items-center justify-center border-2 shadow-xs transition-all duration-300 group-hover:scale-110 group-hover:shadow-md"
                               style={{ backgroundColor: `${bColor}20`, borderColor: bColor }}
                             >
                               <Check className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:scale-110" style={{ color: bColor }} />
